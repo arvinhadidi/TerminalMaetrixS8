@@ -36,81 +36,80 @@ class AlgoStrategy(gamelib.AlgoCore):
         Main place to control strategy
         """
         game_state = gamelib.GameState(self.config, turn_state)
-        # walls_turnplus = [
-        #     [0, 13],
-        #     [1, 13],
-        #     [2, 13],
-        #     [3, 13],
-        #     [24, 13],
-        #     [25, 13],
-        #     [26, 13],
-        #     [27, 13],
-        #     [12, 13],
-        #     [13, 13],
-        #     [14, 13],
-        #     [15, 13],
-        #     [7, 13],
-        #     [20, 13],
-        #     [6, 13],
-        #     [8, 13],
-        #     [19, 13],
-        #     [21, 13],
-        # ]
-        # turrets_turnplus = [
-        #     [3, 12],
-        #     [2, 11],
-        #     [25, 11],
-        #     [24, 12],
-        #     [20, 12],
-        #     [13, 12],
-        #     [14, 12],
-        #     [7, 12],
-        # ]
+        walls_turnplus = [
+            [0, 13],
+            [1, 13],
+            [2, 13],
+            [3, 13],
+            [24, 13],
+            [25, 13],
+            [26, 13],
+            [27, 13],
+            [12, 13],
+            [13, 13],
+            [14, 13],
+            [15, 13],
+            [7, 13],
+            [20, 13],
+            [6, 13],
+            [8, 13],
+            [19, 13],
+            [21, 13],
+        ]
+        turrets_turnplus = [
+            [3, 12],
+            [2, 11],
+            [25, 11],
+            [24, 12],
+            [20, 12],
+            [13, 12],
+            [14, 12],
+            [7, 12],
+        ]
 
-        # if game_state.turn_number == 0:
-        #     walls = [
-        #         [0, 13],
-        #         [1, 13],
-        #         [2, 13],
-        #         [3, 13],
-        #         [24, 13],
-        #         [25, 13],
-        #         [26, 13],
-        #         [27, 13],
-        #         [12, 13],
-        #         [13, 13],
-        #         [14, 13],
-        #         [15, 13],
-        #         [7, 13],
-        #         [20, 13],
-        #     ]
-        #     turrets = [
-        #         [3, 12],
-        #         [2, 11],
-        #         [25, 11],
-        #         [24, 12],
-        #         [20, 12],
-        #         [13, 12],
-        #         [14, 12],
-        #         [7, 12],
-        #     ]
-        #     game_state.attempt_spawn(WALL, walls)
-        #     game_state.attempt_spawn(TURRET, turrets)
+        if game_state.turn_number == 0:
+            walls = [
+                [0, 13],
+                [1, 13],
+                [2, 13],
+                [3, 13],
+                [24, 13],
+                [25, 13],
+                [26, 13],
+                [27, 13],
+                [12, 13],
+                [13, 13],
+                [14, 13],
+                [15, 13],
+                [7, 13],
+                [20, 13],
+            ]
+            turrets = [
+                [3, 12],
+                [2, 11],
+                [25, 11],
+                [24, 12],
+                [20, 12],
+                [13, 12],
+                [14, 12],
+                [7, 12],
+            ]
+            game_state.attempt_spawn(WALL, walls)
+            game_state.attempt_spawn(TURRET, turrets)
 
-        # if game_state.turn_number == 1:
-        #     # turn_1_walls = [[6, 13], [8, 13], [19, 13], [21, 13]]
-        #     # game_state.attempt_spawn(WALL, turn_1_walls)
-        #     # turn_1_upgrade = [[2, 11], [25, 11]]
-        #     # game_state.attempt_upgrade(turn_1_upgrade)
-        #     pass
+        if game_state.turn_number == 1:
+            turn_1_walls = [[6, 13], [8, 13], [19, 13], [21, 13]]
+            game_state.attempt_spawn(WALL, turn_1_walls)
+            turn_1_upgrade = [[2, 11], [25, 11]]
+            game_state.attempt_upgrade(turn_1_upgrade)
 
-        # elif game_state.turn_number >= 1:
-        #     for wall in walls_turnplus:
-        #         if game_state.can_spawn(WALL, wall) == True:
-        #             game_state.attempt_spawn(WALL, wall)
-        #     for turret in turrets_turnplus:
-        #         if game_state.can_spawn(TURRET, turret):
-        #             game_state.attempt_spawn(TURRET, turret)
+        elif game_state.turn_number >= 1:
+            for wall in walls_turnplus:
+                if game_state.can_spawn(WALL, wall) == True:
+                    game_state.attempt_spawn(WALL, wall)
+            for turret in turrets_turnplus:
+                if game_state.can_spawn(TURRET, turret):
+                    game_state.attempt_spawn(TURRET, turret)
 
         # game_state.attempt_spawn(DEMOLISHER, [24, 10], 3)
         gamelib.debug_write(
@@ -133,9 +132,7 @@ class AlgoStrategy(gamelib.AlgoCore):
 
     def starter_strategy(self, game_state):
         # First, place basic defenses
-
-        # self.build_defences(game_state) DISABLED DEFENCES TO CHECK DEMOLISHER LINE
-
+        self.build_defences(game_state)
         # Now build reactive defenses based on where the enemy scored
         self.build_reactive_defense(game_state)
 
@@ -157,7 +154,7 @@ class AlgoStrategy(gamelib.AlgoCore):
 
                 # Only spawn Scouts every other turn
                 # Sending more at once is better since attacks can only hit a single scout at a time
-                if game_state.get_resource(MP) >= 8:
+                if game_state.get_resource(MP) >= 6:
 
                     # Initialize an empty list to store all edge coordinates
                     all_edge_coordinates = []
