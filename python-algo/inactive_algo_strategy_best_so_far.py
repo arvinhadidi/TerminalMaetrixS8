@@ -6,6 +6,20 @@ from sys import maxsize
 import json
 
 
+"""
+Most of the algo code you write will be in this file unless you create new
+modules yourself. Start by modifying the 'on_turn' function.
+
+Advanced strategy tips: 
+
+  - You can analyze action frames by modifying on_action_frame function
+
+  - The GameState.map object can be manually manipulated to create hypothetical 
+  board states. Though, we recommended making a copy of the map to preserve 
+  the actual current map state.
+"""
+
+
 class AlgoStrategy(gamelib.AlgoCore):
     def __init__(self):
         super().__init__()
@@ -33,7 +47,11 @@ class AlgoStrategy(gamelib.AlgoCore):
 
     def on_turn(self, turn_state):
         """
-        Main place to control strategy
+        This function is called every turn with the game state wrapper as
+        an argument. The wrapper stores the state of the arena and has methods
+        for querying its state, allocating your current resources as planned
+        unit deployments, and transmitting your intended deployments to the
+        game engine.
         """
         game_state = gamelib.GameState(self.config, turn_state)
         walls_turnplus = [
@@ -66,7 +84,6 @@ class AlgoStrategy(gamelib.AlgoCore):
             [14, 12],
             [7, 12],
         ]
-
         if game_state.turn_number == 0:
             walls = [
                 [0, 13],
@@ -96,13 +113,11 @@ class AlgoStrategy(gamelib.AlgoCore):
             ]
             game_state.attempt_spawn(WALL, walls)
             game_state.attempt_spawn(TURRET, turrets)
-
         if game_state.turn_number == 1:
             turn_1_walls = [[6, 13], [8, 13], [19, 13], [21, 13]]
             game_state.attempt_spawn(WALL, turn_1_walls)
             turn_1_upgrade = [[2, 11], [25, 11]]
             game_state.attempt_upgrade(turn_1_upgrade)
-
         elif game_state.turn_number >= 1:
             for wall in walls_turnplus:
                 if game_state.can_spawn(WALL, wall) == True:
@@ -111,7 +126,7 @@ class AlgoStrategy(gamelib.AlgoCore):
                 if game_state.can_spawn(TURRET, turret):
                     game_state.attempt_spawn(TURRET, turret)
 
-        # game_state.attempt_spawn(DEMOLISHER, [24, 10], 3)
+        game_state.attempt_spawn(DEMOLISHER, [24, 10], 3)
         gamelib.debug_write(
             "Performing turn {} of your custom algo strategy".format(
                 game_state.turn_number
@@ -131,6 +146,12 @@ class AlgoStrategy(gamelib.AlgoCore):
     """
 
     def starter_strategy(self, game_state):
+        """
+        For defense we will use a spread out layout and some interceptors early on.
+        We will place turrets near locations the opponent managed to score on.
+        For offense we will use long range demolishers if they place stationary units near the enemy's front.
+        If there are no stationary units to attack in the front, we will send Scouts to try and score quickly.
+        """
         # First, place basic defenses
         self.build_defences(game_state)
         # Now build reactive defenses based on where the enemy scored
@@ -160,16 +181,13 @@ class AlgoStrategy(gamelib.AlgoCore):
                     all_edge_coordinates = []
                     massive_attack_spawn_locations = []
 
-                    bottom_left_edge = game_state.game_map.get_edge_locations(
-                        game_state.game_map.BOTTOM_LEFT
-                    )
-                    bottom_right_edge = game_state.game_map.get_edge_locations(
-                        game_state.game_map.BOTTOM_RIGHT
+                    bottom_left_edge = game_map.get_edge_locations(game_map.BOTTOM_LEFT)
+                    bottom_right_edge = game_map.get_edge_locations(
+                        game_map.BOTTOM_RIGHT
                     )
 
                     all_edge_coordinates.extend(bottom_left_edge)
                     all_edge_coordinates.extend(bottom_right_edge)
-
                     for location in all_edge_coordinates:
                         if game_state.can_spawn(SCOUT, location) == False:
                             all_edge_coordinates.remove(location)
@@ -179,26 +197,25 @@ class AlgoStrategy(gamelib.AlgoCore):
                     picked_location_spawn = self.least_damage_spawn_location(
                         game_state, massive_attack_spawn_locations
                     )
-                    print("Trying to do stacking")
                     game_state.attempt_spawn(SCOUT, picked_location_spawn, 6)
 
-                # elif game_state.turn_number != 0 and game_state.turn_number % 2 == 0:
-                #     interceptor_spawn_location_options = [[23, 9], [4, 9]]
-                #     interceptor_spawn_location_best = self.least_damage_spawn_location(
-                #         game_state, interceptor_spawn_location_options
-                #     )
-                #     game_state.attempt_spawn(
-                #         INTERCEPTOR, interceptor_spawn_location_best, 2
-                #     )
-                # elif (
-                #     game_state.turn_number % 2 == 1 and game_state.get_resource(MP) >= 2
-                # ):
-                #     # To simplify we will just check sending them from back left and right
-                #     scout_spawn_location_options = [[13, 0], [14, 0]]
-                #     best_location = self.least_damage_spawn_location(
-                #         game_state, scout_spawn_location_options
-                #     )
-                #     game_state.attempt_spawn(SCOUT, best_location, 2)
+                elif game_state.turn_number != 0 and game_state.turn_number % 2 == 0:
+                    interceptor_spawn_location_options = [[23, 9], [4, 9]]
+                    interceptor_spawn_location_best = self.least_damage_spawn_location(
+                        game_state, interceptor_spawn_location_options
+                    )
+                    game_state.attempt_spawn(
+                        INTERCEPTOR, interceptor_spawn_location_best, 2
+                    )
+                elif (
+                    game_state.turn_number % 2 == 1 and game_state.get_resource(MP) >= 2
+                ):
+                    # To simplify we will just check sending them from back left and right
+                    scout_spawn_location_options = [[13, 0], [14, 0]]
+                    best_location = self.least_damage_spawn_location(
+                        game_state, scout_spawn_location_options
+                    )
+                    game_state.attempt_spawn(SCOUT, best_location, 2)
 
                 # Lastly, if we have spare SP, let's build some supports
                 support_locations = [[13, 2], [14, 2], [13, 3], [14, 3]]
