@@ -4,6 +4,8 @@ import math
 import warnings
 from sys import maxsize
 import json
+from utils.pathfinder import most_convenient_spawn_location
+
 
 
 class AlgoStrategy(gamelib.AlgoCore):
@@ -231,21 +233,21 @@ class AlgoStrategy(gamelib.AlgoCore):
         It gets the path the unit will take then checks locations on that path to
         estimate the path's damage risk.
         """
-        damages = []
-        # Get the damage estimate each path will take
-        for location in location_options:
-            path = game_state.find_path_to_edge(location)
-            damage = 0
-            for path_location in path:
-                # Get number of enemy turrets that can attack each location and multiply by turret damage
-                damage += (
-                    len(game_state.get_attackers(path_location, 0))
-                    * gamelib.GameUnit(TURRET, game_state.config).damage_i
-                )
-            damages.append(damage)
+        # damages = []
+        # # Get the damage estimate each path will take
+        # for location in location_options:
+        #     path = game_state.find_path_to_edge(location)
+        #     damage = 0
+        #     for path_location in path:
+        #         # Get number of enemy turrets that can attack each location and multiply by turret damage
+        #         damage += (
+        #             len(game_state.get_attackers(path_location, 0))
+        #             * gamelib.GameUnit(TURRET, game_state.config).damage_i
+        #         )
+        #     damages.append(damage)
 
-        # Now just return the location that takes the least damage
-        return location_options[damages.index(min(damages))]
+        # # Now just return the location that takes the least damage
+        return most_convenient_spawn_location(game_state, location_options, TURRET)
 
     def detect_enemy_unit(self, game_state, unit_type=None, valid_x=None, valid_y=None):
         total_units = 0
