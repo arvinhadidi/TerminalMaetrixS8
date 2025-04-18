@@ -46,7 +46,7 @@ class AlgoStrategy(gamelib.AlgoCore):
             True
         )  # Comment or remove this line to enable warnings.
 
-        if game_state.turn_number % 3 == 0:  # Every 3 rounds, push some interceptors
+        if game_state.turn_number % 5 == 0:  # Every 3 rounds, push some interceptors
             self.stall_with_interceptors(game_state)
 
         self.starter_strategy(game_state)
@@ -89,7 +89,8 @@ class AlgoStrategy(gamelib.AlgoCore):
             self.build_defences(game_state)
 
             # Stacking
-            if game_state.get_resource(MP) >= 11:
+            stack_size = 10
+            if game_state.get_resource(MP) >= stack_size:
 
                 # Initialize an empty list to store all edge coordinates
                 all_edge_coordinates = []
@@ -115,7 +116,7 @@ class AlgoStrategy(gamelib.AlgoCore):
                     game_state, massive_attack_spawn_locations
                 )
 
-                game_state.attempt_spawn(SCOUT, picked_location_spawn, 11)
+                game_state.attempt_spawn(SCOUT, picked_location_spawn, stack_size)
 
     def build_defences(self, game_state):
         """
@@ -161,9 +162,9 @@ class AlgoStrategy(gamelib.AlgoCore):
             x, y = location
             # Turret cluster
             cluster_locs = [
-                [x, y + 1],
+                [x, y][x, y + 1],
                 [x + 1, y + 1],
-                [x - 1, y + 1],  # 3 turrets in a triangle
+                [x - 1, y + 1],
             ]
             for loc in cluster_locs:
                 game_state.attempt_spawn(TURRET, loc)
@@ -185,7 +186,7 @@ class AlgoStrategy(gamelib.AlgoCore):
         random.shuffle(deploy_locations)
 
         # If we have remaining MP to spend on THREE interceptors, do it
-        while (
+        if (
             game_state.get_resource(MP) >= 3 * game_state.type_cost(INTERCEPTOR)[MP]
             and len(deploy_locations) > 0
         ):
