@@ -162,7 +162,8 @@ class AlgoStrategy(gamelib.AlgoCore):
             x, y = location
             # Turret cluster
             cluster_locs = [
-                [x, y][x, y + 1],
+                [x, y],
+                [x, y + 1],
                 [x + 1, y + 1],
                 [x - 1, y + 1],
             ]
