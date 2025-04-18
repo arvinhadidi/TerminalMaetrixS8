@@ -1,5 +1,5 @@
 import gamelib
-from gamelib.game_map import WALL
+# from gamelib.game_map import WALL
 
 
 def most_convenient_spawn_location(self, game_state, location_options, turret):
@@ -55,7 +55,7 @@ def count_adjacent_enemy_walls(game_state, path_location):
     for neighbor in neighbors:
         if game_state.contains_stationary_unit(neighbor):
             unit = game_state.contains_stationary_unit(neighbor)[0]
-            if unit.unit_type == WALL and unit.player_index == 1:  # 1 = enemy side
+            if unit.unit_type == "FF" and unit.player_index == 1:  # 1 = enemy side
                 adjacent_wall_count += 1
 
     return adjacent_wall_count
