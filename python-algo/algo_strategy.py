@@ -36,83 +36,7 @@ class AlgoStrategy(gamelib.AlgoCore):
         Main place to control strategy
         """
         game_state = gamelib.GameState(self.config, turn_state)
-        # walls_turnplus = [
-        #     [0, 13],
-        #     [1, 13],
-        #     [2, 13],
-        #     [3, 13],
-        #     [24, 13],
-        #     [25, 13],
-        #     [26, 13],
-        #     [27, 13],
-        #     [12, 13],
-        #     [13, 13],
-        #     [14, 13],
-        #     [15, 13],
-        #     [7, 13],
-        #     [20, 13],
-        #     [6, 13],
-        #     [8, 13],
-        #     [19, 13],
-        #     [21, 13],
-        # ]
-        # turrets_turnplus = [
-        #     [3, 12],
-        #     [2, 11],
-        #     [25, 11],
-        #     [24, 12],
-        #     [20, 12],
-        #     [13, 12],
-        #     [14, 12],
-        #     [7, 12],
-        # ]
 
-        # if game_state.turn_number == 0:
-        #     walls = [
-        #         [0, 13],
-        #         [1, 13],
-        #         [2, 13],
-        #         [3, 13],
-        #         [24, 13],
-        #         [25, 13],
-        #         [26, 13],
-        #         [27, 13],
-        #         [12, 13],
-        #         [13, 13],
-        #         [14, 13],
-        #         [15, 13],
-        #         [7, 13],
-        #         [20, 13],
-        #     ]
-        #     turrets = [
-        #         [3, 12],
-        #         [2, 11],
-        #         [25, 11],
-        #         [24, 12],
-        #         [20, 12],
-        #         [13, 12],
-        #         [14, 12],
-        #         [7, 12],
-        #     ]
-        #     game_state.attempt_spawn(WALL, walls)
-        #     game_state.attempt_spawn(TURRET, turrets)
-
-        # if game_state.turn_number == 1:
-        #     # turn_1_walls = [[6, 13], [8, 13], [19, 13], [21, 13]]
-        #     # game_state.attempt_spawn(WALL, turn_1_walls)
-        #     # turn_1_upgrade = [[2, 11], [25, 11]]
-        #     # game_state.attempt_upgrade(turn_1_upgrade)
-        #     pass
-
-        # elif game_state.turn_number >= 1:
-        #     for wall in walls_turnplus:
-        #         if game_state.can_spawn(WALL, wall) == True:
-        #             game_state.attempt_spawn(WALL, wall)
-        #     for turret in turrets_turnplus:
-        #         if game_state.can_spawn(TURRET, turret):
-        #             game_state.attempt_spawn(TURRET, turret)
-
-        # game_state.attempt_spawn(DEMOLISHER, [24, 10], 3)
         gamelib.debug_write(
             "Performing turn {} of your custom algo strategy".format(
                 game_state.turn_number
@@ -131,100 +55,98 @@ class AlgoStrategy(gamelib.AlgoCore):
     strategy and can safely be replaced for your custom algo.
     """
 
+    def clear_defences(self, game_state):
+        for x in range(28):
+            for y in range(14):
+                loc = [x, y]
+                # If there's a stationary unit, try to remove it
+                if game_state.contains_stationary_unit(loc):
+                    game_state.attempt_remove([loc])
+
     def starter_strategy(self, game_state):
         # First, place basic defenses
 
-        # self.build_defences(game_state) DISABLED DEFENCES TO CHECK DEMOLISHER LINE
+        # self.build_defences(game_state)
 
         # Now build reactive defenses based on where the enemy scored
         self.build_reactive_defense(game_state)
 
-        # If the turn is less than 5, stall with interceptors and wait to see enemy's base
-        if game_state.turn_number < 5:
-            self.stall_with_interceptors(game_state)
+        if (
+            self.detect_enemy_unit(
+                game_state, unit_type=None, valid_x=None, valid_y=[14, 15]
+            )
+            > 10
+        ):
+            self.clear_defences(game_state)
+            self.demolisher_line_strategy(game_state)
         else:
-            # Now let's analyze the enemy base to see where their defenses are concentrated.
-            # If they have many units in the front we can build a line for our demolishers to attack them at long range.
-            if (
-                self.detect_enemy_unit(
-                    game_state, unit_type=None, valid_x=None, valid_y=[14, 15]
+            # They don't have many units in the front so lets figure out their least defended area and send Scouts there.
+
+            self.clear_defences(game_state)
+            self.build_defences(game_state)
+
+            # Stacking
+            if game_state.get_resource(MP) >= 8:
+
+                # Initialize an empty list to store all edge coordinates
+                all_edge_coordinates = []
+                massive_attack_spawn_locations = []
+
+                bottom_left_edge = game_state.game_map.get_edge_locations(
+                    game_state.game_map.BOTTOM_LEFT
                 )
-                > 10
-            ):
-                self.demolisher_line_strategy(game_state)
-            else:
-                # They don't have many units in the front so lets figure out their least defended area and send Scouts there.
+                bottom_right_edge = game_state.game_map.get_edge_locations(
+                    game_state.game_map.BOTTOM_RIGHT
+                )
 
-                # Only spawn Scouts every other turn
-                # Sending more at once is better since attacks can only hit a single scout at a time
-                if game_state.get_resource(MP) >= 8:
+                all_edge_coordinates.extend(bottom_left_edge)
+                all_edge_coordinates.extend(bottom_right_edge)
 
-                    # Initialize an empty list to store all edge coordinates
-                    all_edge_coordinates = []
-                    massive_attack_spawn_locations = []
+                for location in all_edge_coordinates:
+                    if game_state.can_spawn(SCOUT, location) == False:
+                        all_edge_coordinates.remove(location)
+                    else:
+                        massive_attack_spawn_locations.append(location)
 
-                    bottom_left_edge = game_state.game_map.get_edge_locations(
-                        game_state.game_map.BOTTOM_LEFT
-                    )
-                    bottom_right_edge = game_state.game_map.get_edge_locations(
-                        game_state.game_map.BOTTOM_RIGHT
-                    )
+                picked_location_spawn = self.least_damage_spawn_location(
+                    game_state, massive_attack_spawn_locations
+                )
 
-                    all_edge_coordinates.extend(bottom_left_edge)
-                    all_edge_coordinates.extend(bottom_right_edge)
-
-                    for location in all_edge_coordinates:
-                        if game_state.can_spawn(SCOUT, location) == False:
-                            all_edge_coordinates.remove(location)
-                        else:
-                            massive_attack_spawn_locations.append(location)
-
-                    picked_location_spawn = self.least_damage_spawn_location(
-                        game_state, massive_attack_spawn_locations
-                    )
-                    print("Trying to do stacking")
-                    game_state.attempt_spawn(SCOUT, picked_location_spawn, 6)
-
-                # elif game_state.turn_number != 0 and game_state.turn_number % 2 == 0:
-                #     interceptor_spawn_location_options = [[23, 9], [4, 9]]
-                #     interceptor_spawn_location_best = self.least_damage_spawn_location(
-                #         game_state, interceptor_spawn_location_options
-                #     )
-                #     game_state.attempt_spawn(
-                #         INTERCEPTOR, interceptor_spawn_location_best, 2
-                #     )
-                # elif (
-                #     game_state.turn_number % 2 == 1 and game_state.get_resource(MP) >= 2
-                # ):
-                #     # To simplify we will just check sending them from back left and right
-                #     scout_spawn_location_options = [[13, 0], [14, 0]]
-                #     best_location = self.least_damage_spawn_location(
-                #         game_state, scout_spawn_location_options
-                #     )
-                #     game_state.attempt_spawn(SCOUT, best_location, 2)
-
-                # Lastly, if we have spare SP, let's build some supports
-                support_locations = [[13, 2], [14, 2], [13, 3], [14, 3]]
-                game_state.attempt_spawn(SUPPORT, support_locations)
+                game_state.attempt_spawn(SCOUT, picked_location_spawn, 8)
 
     def build_defences(self, game_state):
         """
-        Build basic defenses using hardcoded locations.
-        Remember to defend corners and avoid placing units in the front where enemy demolishers can attack them.
+        Build defences
         """
-        # Useful tool for setting up your base locations: https://www.kevinbai.design/terminal-map-maker
-        # More community tools available at: https://terminal.c1games.com/rules#Download
+        walls = [
+            [0, 13],
+            [1, 13],
+            [2, 13],
+            [3, 13],
+            [24, 13],
+            [25, 13],
+            [26, 13],
+            [27, 13],
+            [12, 13],
+            [13, 13],
+            [14, 13],
+            [15, 13],
+            [7, 13],
+            [20, 13],
+        ]
+        turrets = [
+            [3, 12],
+            [2, 11],
+            [25, 11],
+            [24, 12],
+            [20, 12],
+            [13, 12],
+            [14, 12],
+            [7, 12],
+        ]
 
-        # Place turrets that attack enemy units
-        turret_locations = [[0, 13], [27, 13], [8, 11], [19, 11], [13, 11], [14, 11]]
-        # attempt_spawn will try to spawn units if we have resources, and will check if a blocking unit is already there
-        game_state.attempt_spawn(TURRET, turret_locations)
-
-        # Place walls in front of turrets to soak up damage for them
-        wall_locations = [[8, 12], [19, 12]]
-        game_state.attempt_spawn(WALL, wall_locations)
-        # upgrade walls so they soak more damage
-        game_state.attempt_upgrade(wall_locations)
+        game_state.attempt_spawn(WALL, walls)
+        game_state.attempt_spawn(TURRET, turrets)
 
     def build_reactive_defense(self, game_state):
         """
