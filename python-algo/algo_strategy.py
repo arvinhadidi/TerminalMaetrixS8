@@ -247,7 +247,7 @@ class AlgoStrategy(gamelib.AlgoCore):
         #     damages.append(damage)
 
         # # Now just return the location that takes the least damage
-        return most_convenient_spawn_location(game_state, location_options, TURRET)
+        return most_convenient_spawn_location(game_state, location_options, TURRET, WALL)
 
     def detect_enemy_unit(self, game_state, unit_type=None, valid_x=None, valid_y=None):
         total_units = 0
