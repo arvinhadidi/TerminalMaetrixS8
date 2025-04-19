@@ -47,7 +47,7 @@ class AlgoStrategy(gamelib.AlgoCore):
             True
         )  # Comment or remove this line to enable warnings.
 
-        if game_state.turn_number <= 4:
+        if game_state.turn_number <= 3:
             self.build_initial_defence(game_state)
             self.stall_with_interceptors(game_state)
         else:
