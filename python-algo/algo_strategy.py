@@ -53,7 +53,7 @@ class AlgoStrategy(gamelib.AlgoCore):
         else:
             self.build_funnel(game_state)
             self.emp_rush(game_state)
-            self.upgrade_funnel()
+            self.upgrade_funnel(game_state)
 
         # self.starter_strategy(game_state)
 
@@ -65,7 +65,7 @@ class AlgoStrategy(gamelib.AlgoCore):
 
     """
 
-    def upgrade_funnel(game_state):
+    def upgrade_funnel(self, game_state):
         funnel_outer_v = [
             [0, 13],
             [1, 12],
@@ -74,7 +74,7 @@ class AlgoStrategy(gamelib.AlgoCore):
             [4, 9],
             [5, 8],
             [6, 7],
-            [7, 6,]
+            [7, 6],
             [27, 13],
             [26, 12],
             [25, 11],
@@ -103,7 +103,7 @@ class AlgoStrategy(gamelib.AlgoCore):
         game_state.attempt_upgrade(funnel_outer_v)
         game_state.attempt_upgrade(misc_walls)
 
-    def build_funnel(game_state):
+    def build_funnel(self, game_state):
         funnel_outer_v = [
             [0, 13],
             [1, 12],
