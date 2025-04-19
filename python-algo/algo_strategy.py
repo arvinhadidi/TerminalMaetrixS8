@@ -53,9 +53,12 @@ class AlgoStrategy(gamelib.AlgoCore):
         else:
             self.build_funnel(game_state)
             hole_areas = [[13, 8], [12, 8]]
-            game_state.attempt_remove(hole_areas)
-            self.emp_rush(game_state)
             self.upgrade_funnel(game_state)
+            # game_state.attempt_remove(hole_areas)
+            for loc in hole_areas:
+                game_state.attempt_remove(loc)
+
+            self.emp_rush(game_state)
 
         # self.starter_strategy(game_state)
 
@@ -376,6 +379,9 @@ class AlgoStrategy(gamelib.AlgoCore):
         # Instead they will stay at the perfect distance to attack the front two rows of the enemy base.
         for x in range(27, 5, -1):
             game_state.attempt_spawn(cheapest_unit, [x, 11])
+
+        game_state.attempt_remove([13, 8])
+        game_state.attempt_remove([12, 8])
 
         # Now spawn demolishers next to the line
         # By asking attempt_spawn to spawn 1000 units, it will essentially spawn as many as we have resources for
