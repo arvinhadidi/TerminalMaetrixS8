@@ -84,7 +84,7 @@ class AlgoStrategy(gamelib.AlgoCore):
             [20, 6],
         ]
 
-        misc_walls = [[22, 12], [21, 12][5, 12], [6, 12], [8, 7], [19, 7]]
+        misc_walls = [[22, 12], [21, 12], [5, 12], [6, 12], [8, 7], [19, 7]]
 
         wanted_turrets = [
             [22, 11],
@@ -158,7 +158,7 @@ class AlgoStrategy(gamelib.AlgoCore):
         funnel_upper_wall = [[x, 8] for x in range(8, 20)]
         game_state.attempt_spawn(WALL, funnel_upper_wall)
 
-        misc_walls = [[22, 12], [21, 12][5, 12], [6, 12], [8, 7], [19, 7]]
+        misc_walls = [[22, 12], [21, 12], [5, 12], [6, 12], [8, 7], [19, 7]]
         game_state.attemp_spawn(WALL, misc_walls)
 
     def emp_rush(self, game_state):
