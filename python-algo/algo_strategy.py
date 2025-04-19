@@ -74,7 +74,8 @@ class AlgoStrategy(gamelib.AlgoCore):
             [4, 9],
             [5, 8],
             [6, 7],
-            [7, 6][27, 13],
+            [7, 6,]
+            [27, 13],
             [26, 12],
             [25, 11],
             [24, 10],
@@ -111,7 +112,8 @@ class AlgoStrategy(gamelib.AlgoCore):
             [4, 9],
             [5, 8],
             [6, 7],
-            [7, 6][27, 13],
+            [7, 6],
+            [27, 13],
             [26, 12],
             [25, 11],
             [24, 10],
@@ -159,7 +161,7 @@ class AlgoStrategy(gamelib.AlgoCore):
         game_state.attempt_spawn(WALL, funnel_upper_wall)
 
         misc_walls = [[22, 12], [21, 12], [5, 12], [6, 12], [8, 7], [19, 7]]
-        game_state.attemp_spawn(WALL, misc_walls)
+        game_state.attempt_spawn(WALL, misc_walls)
 
     def emp_rush(self, game_state):
         stack_size = 10
@@ -206,7 +208,7 @@ class AlgoStrategy(gamelib.AlgoCore):
             [23, 9],
         ]
 
-        game_state.attemp_spawn(TURRET, initial_turrets)
+        game_state.attempt_spawn(TURRET, initial_turrets)
         game_state.attempt_spawn(WALL, initial_walls)
 
     def clear_defences(self, game_state):
