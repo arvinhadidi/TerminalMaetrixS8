@@ -52,6 +52,8 @@ class AlgoStrategy(gamelib.AlgoCore):
             self.stall_with_interceptors(game_state)
         else:
             self.build_funnel(game_state)
+            hole_areas = [[13, 8], [12, 8]]
+            game_state.attempt_remove(hole_areas)
             self.emp_rush(game_state)
             self.upgrade_funnel(game_state)
 
@@ -165,8 +167,6 @@ class AlgoStrategy(gamelib.AlgoCore):
 
     def emp_rush(self, game_state):
         stack_size = 10
-        hole_areas = [[13, 8], [12, 8]]
-        game_state.attempt_remove(hole_areas)
 
         if game_state.get_resource(MP) >= stack_size:
 
@@ -195,8 +195,6 @@ class AlgoStrategy(gamelib.AlgoCore):
             )
 
             game_state.attempt_spawn(SCOUT, picked_location_spawn, stack_size)
-
-        game_state.attempt_spawn(WALL, hole_areas)
 
     def build_initial_defence(self, game_state):
         initial_turrets = [[22, 11], [17, 11], [14, 11], [10, 11], [5, 11]]
