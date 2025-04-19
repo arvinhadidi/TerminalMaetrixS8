@@ -7,6 +7,7 @@ import json
 from utils.pathfinder import most_convenient_spawn_location
 
 
+
 class AlgoStrategy(gamelib.AlgoCore):
     def __init__(self):
         super().__init__()
@@ -47,167 +48,17 @@ class AlgoStrategy(gamelib.AlgoCore):
             True
         )  # Comment or remove this line to enable warnings.
 
-        if game_state.turn_number <= 5:
-            self.build_initial_defence(game_state)
+        if game_state.turn_number % 5 == 0:  # Every 3 rounds, push some interceptors
             self.stall_with_interceptors(game_state)
-        else:
-            self.build_funnel(game_state)
-            self.emp_rush(game_state)
-            self.upgrade_funnel()
 
-        # self.starter_strategy(game_state)
+        self.starter_strategy(game_state)
 
         game_state.submit_turn()
 
     """
     NOTE: All the methods after this point are part of the sample starter-algo
     strategy and can safely be replaced for your custom algo.
-
     """
-
-    def upgrade_funnel(game_state):
-        funnel_outer_v = [
-            [0, 13],
-            [1, 12],
-            [2, 11],
-            [3, 10],
-            [4, 9],
-            [5, 8],
-            [6, 7],
-            [7, 6][27, 13],
-            [26, 12],
-            [25, 11],
-            [24, 10],
-            [23, 9],
-            [22, 8],
-            [21, 7],
-            [20, 6],
-        ]
-
-        misc_walls = [[22, 12], [21, 12][5, 12], [6, 12], [8, 7], [19, 7]]
-
-        wanted_turrets = [
-            [22, 11],
-            [21, 11],
-            [20, 10],
-            [19, 8],
-            [5, 11],
-            [6, 11],
-            [7, 10],
-            [8, 9],
-            [13, 6],
-        ]
-
-        game_state.attempt_upgrade(wanted_turrets)
-        game_state.attempt_upgrade(funnel_outer_v)
-        game_state.attempt_upgrade(misc_walls)
-
-    def build_funnel(game_state):
-        funnel_outer_v = [
-            [0, 13],
-            [1, 12],
-            [2, 11],
-            [3, 10],
-            [4, 9],
-            [5, 8],
-            [6, 7],
-            [7, 6][27, 13],
-            [26, 12],
-            [25, 11],
-            [24, 10],
-            [23, 9],
-            [22, 8],
-            [21, 7],
-            [20, 6],
-        ]
-
-        wanted_turrets = [
-            [22, 11],
-            [21, 11],
-            [20, 10],
-            [19, 8],
-            [5, 11],
-            [6, 11],
-            [7, 10],
-            [8, 9],
-            [13, 6],
-        ]
-
-        funnel_inner_v = [[5, 11], [6, 10], [7, 9], [22, 11], [21, 10], [20, 9]]
-
-        game_state.attempt_spawn(WALL, funnel_outer_v)
-        game_state.attempt_spawn(WALL, funnel_inner_v)
-
-        remove_unwanted_turrets = [[17, 11], [14, 11], [10, 11]]
-        for turret in remove_unwanted_turrets:
-            game_state.attempt_remove(turret)
-
-        wanted_turrets = [
-            [22, 11],
-            [21, 11],
-            [20, 10],
-            [19, 8],
-            [5, 11],
-            [6, 11],
-            [7, 10],
-            [8, 9],
-            [13, 6],
-        ]
-        game_state.attempt_spawn(TURRET, wanted_turrets)
-
-        funnel_upper_wall = [[x, 8] for x in range(8, 20)]
-        game_state.attempt_spawn(WALL, funnel_upper_wall)
-
-        misc_walls = [[22, 12], [21, 12][5, 12], [6, 12], [8, 7], [19, 7]]
-        game_state.attemp_spawn(WALL, misc_walls)
-
-    def emp_rush(self, game_state):
-        stack_size = 10
-        if game_state.get_resource(MP) >= stack_size:
-
-            # Initialize an empty list to store all edge coordinates
-            all_edge_coordinates = []
-            massive_attack_spawn_locations = []
-
-            bottom_left_edge = game_state.game_map.get_edge_locations(
-                game_state.game_map.BOTTOM_LEFT
-            )
-            bottom_right_edge = game_state.game_map.get_edge_locations(
-                game_state.game_map.BOTTOM_RIGHT
-            )
-
-            all_edge_coordinates.extend(bottom_left_edge)
-            all_edge_coordinates.extend(bottom_right_edge)
-
-            for location in all_edge_coordinates:
-                if game_state.can_spawn(SCOUT, location) == False:
-                    all_edge_coordinates.remove(location)
-                else:
-                    massive_attack_spawn_locations.append(location)
-
-            picked_location_spawn = self.least_damage_spawn_location(
-                game_state, massive_attack_spawn_locations
-            )
-
-            game_state.attempt_spawn(SCOUT, picked_location_spawn, stack_size)
-
-    def build_initial_defence(self, game_state):
-        initial_turrets = [[22, 11], [17, 11], [14, 11], [10, 11], [5, 11]]
-        initial_walls = [
-            [0, 13],
-            [1, 12],
-            [2, 11],
-            [3, 10],
-            [4, 9],
-            [27, 13],
-            [26, 12],
-            [25, 11],
-            [24, 10],
-            [23, 9],
-        ]
-
-        game_state.attemp_spawn(TURRET, initial_turrets)
-        game_state.attempt_spawn(WALL, initial_walls)
 
     def clear_defences(self, game_state):
         for x in range(28):
@@ -396,9 +247,7 @@ class AlgoStrategy(gamelib.AlgoCore):
         #     damages.append(damage)
 
         # # Now just return the location that takes the least damage
-        return most_convenient_spawn_location(
-            game_state, location_options, TURRET, WALL
-        )
+        return most_convenient_spawn_location(game_state, location_options, TURRET, WALL)
 
     def detect_enemy_unit(self, game_state, unit_type=None, valid_x=None, valid_y=None):
         total_units = 0
