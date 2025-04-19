@@ -8,6 +8,7 @@ from utils.pathfinder import most_convenient_spawn_location
 
 
 class AlgoStrategy(gamelib.AlgoCore):
+
     def __init__(self):
         super().__init__()
         seed = random.randrange(maxsize)
@@ -47,13 +48,11 @@ class AlgoStrategy(gamelib.AlgoCore):
             True
         )  # Comment or remove this line to enable warnings.
 
-        if game_state.turn_number <= 3:
+        if game_state.turn_number <= 2:
             self.build_initial_defence(game_state)
             self.stall_with_interceptors(game_state)
         else:
             self.build_funnel(game_state)
-            hole_areas = [[13, 8], [12, 8]]
-            game_state.attempt_remove(hole_areas)
             self.emp_rush(game_state)
             self.upgrade_funnel(game_state)
 
@@ -87,23 +86,40 @@ class AlgoStrategy(gamelib.AlgoCore):
             [20, 6],
         ]
 
-        misc_walls = [[22, 12], [21, 12], [5, 12], [6, 12], [8, 7], [19, 7]]
+        misc_walls = [[22, 12], [21, 12], [5, 12], [6, 12]]
 
         wanted_turrets = [
             [22, 11],
             [21, 11],
             [20, 10],
-            [19, 8],
+            [19, 9],
             [5, 11],
             [6, 11],
             [7, 10],
             [8, 9],
             [13, 6],
+            [14, 6],
+            [13, 5],
+            [14, 5],
+            [9, 9],
+            [19, 9],
+            [9, 7],
+            [18, 7],
+            [10, 7],
+            [17, 7],
+            [4, 12],
+            [23, 12],
+            [4, 13],
+            [5, 13],
+            [6, 13],
+            [23, 13],
+            [22, 13],
+            [21, 13],
         ]
 
-        game_state.attempt_upgrade(wanted_turrets)
         game_state.attempt_upgrade(funnel_outer_v)
         game_state.attempt_upgrade(misc_walls)
+        game_state.attempt_upgrade(wanted_turrets)
 
     def build_funnel(self, game_state):
         funnel_outer_v = [
@@ -129,12 +145,29 @@ class AlgoStrategy(gamelib.AlgoCore):
             [22, 11],
             [21, 11],
             [20, 10],
-            [19, 8],
+            [19, 9],
             [5, 11],
             [6, 11],
             [7, 10],
             [8, 9],
             [13, 6],
+            [14, 6],
+            [13, 5],
+            [14, 5],
+            [9, 9],
+            [19, 9],
+            [9, 7],
+            [18, 7],
+            [10, 7],
+            [17, 7],
+            [4, 12],
+            [23, 12],
+            [4, 13],
+            [5, 13],
+            [6, 13],
+            [23, 13],
+            [22, 13],
+            [21, 13],
         ]
 
         funnel_inner_v = [[5, 11], [6, 10], [7, 9], [22, 11], [21, 10], [20, 9]]
@@ -146,29 +179,19 @@ class AlgoStrategy(gamelib.AlgoCore):
         for turret in remove_unwanted_turrets:
             game_state.attempt_remove(turret)
 
-        wanted_turrets = [
-            [22, 11],
-            [21, 11],
-            [20, 10],
-            [19, 8],
-            [5, 11],
-            [6, 11],
-            [7, 10],
-            [8, 9],
-            [13, 6],
-        ]
-        game_state.attempt_spawn(TURRET, wanted_turrets)
-
         funnel_upper_wall = [[x, 8] for x in range(8, 20)]
+
         game_state.attempt_spawn(WALL, funnel_upper_wall)
 
-        misc_walls = [[22, 12], [21, 12], [5, 12], [6, 12], [8, 7], [19, 7]]
+        misc_walls = [[22, 12], [21, 12], [5, 12], [6, 12]]
         game_state.attempt_spawn(WALL, misc_walls)
 
-    def emp_rush(self, game_state):
-        stack_size = 10
+        game_state.attempt_spawn(TURRET, wanted_turrets)
 
-        if game_state.get_resource(MP) >= stack_size:
+    def emp_rush(self, game_state):
+        stack_size = 8
+
+        if game_state.get_resource(MP) >= stack_size + 4:
 
             # Initialize an empty list to store all edge coordinates
             all_edge_coordinates = []
@@ -195,6 +218,15 @@ class AlgoStrategy(gamelib.AlgoCore):
             )
 
             game_state.attempt_spawn(SCOUT, picked_location_spawn, stack_size)
+            if (
+                self.detect_enemy_unit(
+                    game_state, unit_type=None, valid_x=None, valid_y=[14, 15]
+                )
+            ) > 10:
+                game_state.attempt_spawn(DEMOLISHER, [[10, 3]], 1)
+                game_state.attempt_spawn(INTERCEPTOR, [[17, 3]], 1)
+                game_state.attempt_spawn(DEMOLISHER, [[17, 3]], 1)
+                game_state.attempt_spawn(INTERCEPTOR, [[10, 3]], 1)
 
     def build_initial_defence(self, game_state):
         initial_turrets = [[22, 11], [17, 11], [14, 11], [10, 11], [5, 11]]
