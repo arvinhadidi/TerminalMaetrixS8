@@ -47,7 +47,7 @@ class AlgoStrategy(gamelib.AlgoCore):
             True
         )  # Comment or remove this line to enable warnings.
 
-        if game_state.turn_number <= 5:
+        if game_state.turn_number <= 4:
             self.build_initial_defence(game_state)
             self.stall_with_interceptors(game_state)
         else:
@@ -165,6 +165,9 @@ class AlgoStrategy(gamelib.AlgoCore):
 
     def emp_rush(self, game_state):
         stack_size = 10
+        hole_areas = [[13, 8], [12, 8]]
+        game_state.attempt_remove(hole_areas)
+
         if game_state.get_resource(MP) >= stack_size:
 
             # Initialize an empty list to store all edge coordinates
@@ -192,6 +195,8 @@ class AlgoStrategy(gamelib.AlgoCore):
             )
 
             game_state.attempt_spawn(SCOUT, picked_location_spawn, stack_size)
+
+        game_state.attempt_spawn(WALL, hole_areas)
 
     def build_initial_defence(self, game_state):
         initial_turrets = [[22, 11], [17, 11], [14, 11], [10, 11], [5, 11]]
@@ -341,11 +346,11 @@ class AlgoStrategy(gamelib.AlgoCore):
 
         # If we have remaining MP to spend on THREE interceptors, do it
         if (
-            game_state.get_resource(MP) >= 3 * game_state.type_cost(INTERCEPTOR)[MP]
+            game_state.get_resource(MP) >= 4 * game_state.type_cost(INTERCEPTOR)[MP]
             and len(deploy_locations) > 0
         ):
             # Send a maximum of 3 interceptors out
-            for i in range(0, min(len(deploy_locations), 3)):
+            for i in range(0, min(len(deploy_locations), 4)):
                 game_state.attempt_spawn(INTERCEPTOR, deploy_locations[i])
 
             """
