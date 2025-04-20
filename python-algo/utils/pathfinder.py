@@ -1,13 +1,31 @@
 import gamelib
 # from gamelib.game_map import WALL
 
+UNIT_WEIGHTS = {
+    "SCOUT": {
+        "damage": 0.6,
+        "length": 0.35,
+        "walls": 0.05
+    },
+    "DEMOLISHER": {
+        "damage": -0.2,
+        "length": 0.2,
+        "walls": 0.6
+    },
+    "INTERCEPTOR": {
+        "damage": 0.3,
+        "length": 0.4,
+        "walls": 0.3
+    }
+}
 
-def most_convenient_spawn_location(game_state, location_options, turret, wall):
+def most_convenient_spawn_location(game_state, location_options, turret, wall, unit_type):
         """
         This function will help us guess which location is the safest to spawn moving units from.
         It gets the path the unit will take then checks locations on that path to
         estimate the path's damage risk.
         """
+        weights = UNIT_WEIGHTS[unit_type]
         damages = []
         path_lengths = []
         enemy_walls = []
@@ -34,7 +52,7 @@ def most_convenient_spawn_location(game_state, location_options, turret, wall):
             path_lengths.append(path_length)
             enemy_walls.append(enemy_wall_amount)
 
-        best_path_index = get_best_scoring_path_index(damages, path_lengths, enemy_walls)
+        best_path_index = get_best_scoring_path_index(damages, path_lengths, enemy_walls, weights)
 
         # Now just return the location that takes the least damage
         return location_options[best_path_index]
@@ -61,20 +79,22 @@ def count_adjacent_enemy_walls(game_state, path_location, wall):
     return adj_wall_count
 
 
-def get_best_scoring_path_index(damages, path_lengths, enemy_walls):
+def get_best_scoring_path_index(damages, path_lengths, enemy_walls, weights):
     # lowest score is best score so i gave the initial best score a rlly high number so it will get replaced immediately
     best_score = 10000000
-    current_score = 0
-    best_path_index = 0
+    best_index = 0
 
-    # run through the stats for all of the locations
     for i in range(len(damages)):
-        current_score = (0.5 * damages[i]) + (0.35 * path_lengths[i]) + (0.2 * enemy_walls[i])
-        if current_score < best_score:
-            best_score = current_score
-            best_path_index = i
+        score = (
+            weights["damage"] * damages[i]
+            + weights["length"] * path_lengths[i]
+            + weights["walls"] * enemy_walls[i]
+        )
+        if score < best_score:
+            best_score = score
+            best_index = i
 
-    return best_path_index
+    return best_index
 
 
 

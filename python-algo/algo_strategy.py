@@ -213,20 +213,27 @@ class AlgoStrategy(gamelib.AlgoCore):
                 else:
                     massive_attack_spawn_locations.append(location)
 
-            picked_location_spawn = self.least_damage_spawn_location(
-                game_state, massive_attack_spawn_locations
+            picked_scout_location_spawn = self.least_damage_spawn_location(
+                game_state, massive_attack_spawn_locations, "SCOUT"
             )
 
-            game_state.attempt_spawn(SCOUT, picked_location_spawn, stack_size)
+            game_state.attempt_spawn(SCOUT, picked_scout_location_spawn, stack_size)
             if (
                 self.detect_enemy_unit(
                     game_state, unit_type=None, valid_x=None, valid_y=[14, 15]
                 )
             ) > 10:
-                game_state.attempt_spawn(DEMOLISHER, [[10, 3]], 1)
-                game_state.attempt_spawn(INTERCEPTOR, [[17, 3]], 1)
-                game_state.attempt_spawn(DEMOLISHER, [[17, 3]], 1)
-                game_state.attempt_spawn(INTERCEPTOR, [[10, 3]], 1)
+                # CAN CHANGE THE LIST OF POSSIBLE LOCATIONS FOR DEMOLISHER AND INTERCEPTOR
+                picked_demolisher_location_spawn = self.least_damage_spawn_location(
+                game_state, massive_attack_spawn_locations, "DEMOLISHER"
+                )
+                picked_interceptor_location_spawn = self.least_damage_spawn_location(
+                game_state, massive_attack_spawn_locations, "INTERCEPTOR"
+                )
+                game_state.attempt_spawn(DEMOLISHER, [picked_demolisher_location_spawn], 1)
+                game_state.attempt_spawn(INTERCEPTOR, [picked_interceptor_location_spawn], 1)
+                game_state.attempt_spawn(DEMOLISHER, [picked_demolisher_location_spawn], 1)
+                game_state.attempt_spawn(INTERCEPTOR, [picked_interceptor_location_spawn], 1)
 
     def build_initial_defence(self, game_state):
         initial_turrets = [[22, 11], [17, 11], [14, 11], [10, 11], [5, 11]]
@@ -300,8 +307,9 @@ class AlgoStrategy(gamelib.AlgoCore):
                     else:
                         massive_attack_spawn_locations.append(location)
 
+                # set to get location for a scout to spawn. change if needed.
                 picked_location_spawn = self.least_damage_spawn_location(
-                    game_state, massive_attack_spawn_locations
+                    game_state, massive_attack_spawn_locations, "SCOUT"
                 )
 
                 game_state.attempt_spawn(SCOUT, picked_location_spawn, stack_size)
@@ -413,7 +421,7 @@ class AlgoStrategy(gamelib.AlgoCore):
         # By asking attempt_spawn to spawn 1000 units, it will essentially spawn as many as we have resources for
         game_state.attempt_spawn(DEMOLISHER, [24, 10], 1000)
 
-    def least_damage_spawn_location(self, game_state, location_options):
+    def least_damage_spawn_location(self, game_state, location_options, unit_type):
         """
         This function will help us guess which location is the safest to spawn moving units from.
         It gets the path the unit will take then checks locations on that path to
@@ -434,7 +442,7 @@ class AlgoStrategy(gamelib.AlgoCore):
 
         # # Now just return the location that takes the least damage
         return most_convenient_spawn_location(
-            game_state, location_options, TURRET, WALL
+            game_state, location_options, TURRET, WALL, unit_type
         )
 
     def detect_enemy_unit(self, game_state, unit_type=None, valid_x=None, valid_y=None):
