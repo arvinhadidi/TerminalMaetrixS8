@@ -9,7 +9,7 @@ from utils.pathfinder import most_convenient_spawn_location
 
 class AlgoStrategy(gamelib.AlgoCore):
     attack_state = 0
-    hole_area = [[[16, 10], [16, 11], [17, 11]], [[10, 11], [11, 11], [11, 10]]]
+    hole_area = [[[10, 8]]] # CHANGED TO ONE SQUARE ONLY
     chosen_hole = []
     stack_size = 8
 
@@ -66,14 +66,15 @@ class AlgoStrategy(gamelib.AlgoCore):
         ):  # any[False, False, False] = False
             self.attack_state = 2
 
-        if game_state.turn_number <= 3:
-            self.stall_with_interceptors(game_state)
+        # if game_state.turn_number <= 3:
+        #     self.stall_with_interceptors(game_state)
 
-        self.build_structure(game_state)
-        self.attack(game_state)
-        self.upgrade_structure(game_state)
-
-        # self.starter_strategy(game_state)
+        if game_state.turn_number > 2:
+            self.build_structure(game_state)
+            self.attack(game_state)
+            self.upgrade_structure(game_state)
+        else:
+            self.starter_strategy(game_state)
 
         game_state.submit_turn()
 
@@ -94,13 +95,13 @@ class AlgoStrategy(gamelib.AlgoCore):
 
     def build_structure(self, game_state):
         walls = []
-        walls.extend([[x, 13] for x in range(0, 4)])  # Left top side
-        walls.append([4, 12])
-        walls.extend([[x, 13] for x in range(24, 28)])  # Right top side
-        walls.append([23, 12])
-        walls.extend([[x, 11] for x in range(5, 23)])
-        walls.extend([[7, 10], [11, 10], [16, 10], [20, 10]])
-        walls.extend([[1, 12], [2, 12], [2, 11], [26, 12], [25, 12], [25, 11]])
+        walls.extend([[2, 11], [3, 10], [4, 9]])  # Left top side, 3 SP
+        walls.extend([[x, 8] for x in range(5, 18)])  # Flat part, 13 SP
+        walls.extend([[18, 9], [19, 10], [20, 11], [20, 12], [22, 9]]) # Right side, 5 SP
+
+        # idk how this code is gonna be now. I wanna keep it tho!
+        # COMMENTED OUT HOLE OPEN/CLOSE BC IT WAS CAUSING ERRORS
+
 
         if (
             self.attack_state == 1 or self.attack_state == 2
@@ -109,30 +110,19 @@ class AlgoStrategy(gamelib.AlgoCore):
                 walls.remove(loc)
 
         turrets = []
-        turrets.extend(
-            [[3, 12], [4, 11], [24, 12], [23, 11]]
-        )  # Left and right diagonal bits
-        turrets.extend(
-            [
-                [5, 10],
-                [6, 10],
-                [8, 10],
-                [9, 10],
-                [10, 10],
-                [12, 10],
-                [13, 10],
-                [14, 10],
-                [15, 10],
-                [17, 10],
-                [18, 10],
-                [19, 10],
-                [21, 10],
-                [22, 10],
-            ]
-        )  # Main line
+        turrets.extend([[0, 13], [1, 13], [1, 12]])  # Left diagonal bits, 6 SP
+        turrets.extend([
+            [27, 13],
+            [26, 13],
+            [25, 13],
+            [24, 12],
+            [23, 11],
+            [22, 11],
+            [20, 10]
+        ])  # RHS, 14 SP
 
         support = []
-        support.extend([[13, 8], [14, 8], [13, 9], [14, 9]])
+        support.extend([[22, 8], [23, 9]]) # 8 SP
 
         game_state.attempt_spawn(WALL, walls)
         game_state.attempt_spawn(TURRET, turrets)
@@ -140,65 +130,44 @@ class AlgoStrategy(gamelib.AlgoCore):
 
     def upgrade_structure(self, game_state):
         walls = []
-        walls.extend([[x, 13] for x in range(0, 4)])  # Left top side
-        walls.append([4, 12])
-        walls.extend([[x, 13] for x in range(24, 28)])  # Right top side
-        walls.append([23, 12])
-        walls.extend([[x, 11] for x in range(5, 23)])
-        walls.extend([[7, 10], [11, 10], [16, 10], [20, 10]])
-        walls.extend([[1, 12], [2, 12], [2, 11], [26, 12], [25, 12], [25, 11]])
+        walls.extend([[21, 13], [22, 13]]) # 2 SP
 
         turrets = []
-        turrets.extend(
-            [[3, 12], [4, 11], [24, 12], [23, 11]]
-        )  # Left and right diagonal bits
-        turrets.extend(
-            [
-                [5, 10],
-                [6, 10],
-                [8, 10],
-                [9, 10],
-                [10, 10],
-                [12, 10],
-                [13, 10],
-                [14, 10],
-                [15, 10],
-                [17, 10],
-                [18, 10],
-                [19, 10],
-                [21, 10],
-                [22, 10],
-            ]
-        )  # Main line
+        turrets.extend([[9, 8], [11, 8]])  # Left and right bits, 6 SP
+        turrets.extend([[24, 13], [2, 13], [2, 12]])  # Left and right bits, 6 SP
 
         support = []
-        support.extend([[13, 8], [14, 8], [13, 9], [14, 9]])
+        support.extend([[19, 8], [19, 7], [18, 8], [9, 7], [11, 7]]) # 20 SP
 
-        game_state.attempt_upgrade(walls)
-        game_state.attempt_upgrade(turrets)
-        game_state.attempt_upgrade(support)
+        for x in range(18, 14, -1):  # 18 to 15 inclusive
+            for y in range(7, 4, -1):  # 7 to 5 inclusive
+                support.append([x, y])
+
+        game_state.attempt_spawn(WALL, walls)
+        game_state.attempt_spawn(TURRET, turrets)
+        game_state.attempt_spawn(SUPPORT, support)
 
     def attack(self, game_state):
 
         if self.attack_state == 2:
             all_edge_coordinates = []
-            massive_attack_spawn_locations = []
+            massive_attack_spawn_locations = [[24, 10], [14, 0]]
 
-            bottom_left_edge = game_state.game_map.get_edge_locations(
-                game_state.game_map.BOTTOM_LEFT
-            )
-            bottom_right_edge = game_state.game_map.get_edge_locations(
-                game_state.game_map.BOTTOM_RIGHT
-            )
+            # bottom_left_edge = game_state.game_map.get_edge_locations(
+            #     game_state.game_map.BOTTOM_LEFT
+            # )
+            # bottom_right_edge = game_state.game_map.get_edge_locations(
+            #     game_state.game_map.BOTTOM_RIGHT
+            # )
 
-            all_edge_coordinates.extend(bottom_left_edge)
-            all_edge_coordinates.extend(bottom_right_edge)
+            # all_edge_coordinates.extend(bottom_left_edge)
+            # all_edge_coordinates.extend(bottom_right_edge)
 
-            for location in all_edge_coordinates:
-                if game_state.can_spawn(SCOUT, location) == False:
-                    all_edge_coordinates.remove(location)
-                else:
-                    massive_attack_spawn_locations.append(location)
+            # for location in all_edge_coordinates:
+            #     if game_state.can_spawn(SCOUT, location) == False:
+            #         all_edge_coordinates.remove(location)
+            #     else:
+            #         massive_attack_spawn_locations.append(location)
 
             picked_scout_location_spawn = self.least_damage_spawn_location(
                 game_state, massive_attack_spawn_locations, "SCOUT"
@@ -278,53 +247,36 @@ class AlgoStrategy(gamelib.AlgoCore):
 
         # self.build_defences(game_state)
 
-        # Now build reactive defenses based on where the enemy scored
-        self.build_reactive_defense(game_state)
+        # Stacking
+        stack_size = 3
+        if game_state.get_resource(MP) >= stack_size:
 
-        if (
-            self.detect_enemy_unit(
-                game_state, unit_type=None, valid_x=None, valid_y=[14, 15]
+            # Initialize an empty list to store all edge coordinates
+            all_edge_coordinates = []
+            massive_attack_spawn_locations = []
+
+            bottom_left_edge = game_state.game_map.get_edge_locations(
+                game_state.game_map.BOTTOM_LEFT
             )
-            > 10
-        ):
-            self.clear_defences(game_state)
-            self.demolisher_line_strategy(game_state)
-        else:
-            # They don't have many units in the front so lets figure out their least defended area and send Scouts there.
+            bottom_right_edge = game_state.game_map.get_edge_locations(
+                game_state.game_map.BOTTOM_RIGHT
+            )
 
-            self.clear_defences(game_state)
-            self.build_defences(game_state)
+            all_edge_coordinates.extend(bottom_left_edge)
+            all_edge_coordinates.extend(bottom_right_edge)
 
-            # Stacking
-            stack_size = 10
-            if game_state.get_resource(MP) >= stack_size:
+            for location in all_edge_coordinates:
+                if game_state.can_spawn(SCOUT, location) == False:
+                    all_edge_coordinates.remove(location)
+                else:
+                    massive_attack_spawn_locations.append(location)
 
-                # Initialize an empty list to store all edge coordinates
-                all_edge_coordinates = []
-                massive_attack_spawn_locations = []
+            # set to get location for a scout to spawn. change if needed.
+            picked_location_spawn = self.least_damage_spawn_location(
+                game_state, massive_attack_spawn_locations, "SCOUT"
+            )
 
-                bottom_left_edge = game_state.game_map.get_edge_locations(
-                    game_state.game_map.BOTTOM_LEFT
-                )
-                bottom_right_edge = game_state.game_map.get_edge_locations(
-                    game_state.game_map.BOTTOM_RIGHT
-                )
-
-                all_edge_coordinates.extend(bottom_left_edge)
-                all_edge_coordinates.extend(bottom_right_edge)
-
-                for location in all_edge_coordinates:
-                    if game_state.can_spawn(SCOUT, location) == False:
-                        all_edge_coordinates.remove(location)
-                    else:
-                        massive_attack_spawn_locations.append(location)
-
-                # set to get location for a scout to spawn. change if needed.
-                picked_location_spawn = self.least_damage_spawn_location(
-                    game_state, massive_attack_spawn_locations, "SCOUT"
-                )
-
-                game_state.attempt_spawn(SCOUT, picked_location_spawn, stack_size)
+            game_state.attempt_spawn(SCOUT, picked_location_spawn, stack_size)
 
     def build_reactive_defense(self, game_state):
         """

@@ -5,17 +5,20 @@ UNIT_WEIGHTS = {
     "SCOUT": {
         "damage": 0.6,
         "length": 0.35,
-        "walls": 0.05
+        "walls": 0.05,
+        "supports": -0.2
     },
     "DEMOLISHER": {
-        "damage": -0.2,
+        "damage": 0.6,
         "length": 0.2,
-        "walls": 0.6
+        "walls": -0.6,
+        "supports": -0.25
     },
     "INTERCEPTOR": {
         "damage": 0.3,
         "length": 0.4,
-        "walls": 0.3
+        "walls": 0.2,
+        "supports": -0.05
     }
 }
 
@@ -29,12 +32,14 @@ def most_convenient_spawn_location(game_state, location_options, turret, wall, u
         damages = []
         path_lengths = []
         enemy_walls = []
+        supports = []
         # Get the damage estimate each path will take
         for location in location_options:
             path = game_state.find_path_to_edge(location)
             damage = 0
             path_length = 0
             enemy_wall_amount = 0
+            support_amount = 0
             for path_location in path:
                 # Get number of enemy turrets that can attack each location and multiply by turret damage
                 damage += (
@@ -45,14 +50,18 @@ def most_convenient_spawn_location(game_state, location_options, turret, wall, u
                 # get number of walls alongside the path
                 enemy_wall_amount += count_adjacent_enemy_walls(game_state, path_location, wall)
 
+                # get number of walls alongside the path
+                support_amount += count_support_points(game_state, path_location)
+
                 # add 1 to the path length
                 path_length += 1
 
             damages.append(damage)
             path_lengths.append(path_length)
             enemy_walls.append(enemy_wall_amount)
+            supports.append(support_amount)
 
-        best_path_index = get_best_scoring_path_index(damages, path_lengths, enemy_walls, weights)
+        best_path_index = get_best_scoring_path_index(damages, path_lengths, enemy_walls, supports, weights)
 
         # Now just return the location that takes the least damage
         return location_options[best_path_index]
@@ -78,8 +87,25 @@ def count_adjacent_enemy_walls(game_state, path_location, wall):
 
     return adj_wall_count
 
+def count_support_points(game_state, location):
+    """
+    Returns the number of friendly support units within 3.5 units of a given location.
+    """
+    support_type = "SUPPORT"
+    support_range = 3.5
+    count = 0
 
-def get_best_scoring_path_index(damages, path_lengths, enemy_walls, weights):
+    for pos in game_state.game_map:
+        units = game_state.game_map[pos]
+        for unit in units:
+            if unit.unit_type == support_type and unit.player_index == 0:
+                distance = ((pos[0] - location[0]) ** 2 + (pos[1] - location[1]) ** 2) ** 0.5
+                if distance <= support_range:
+                    count += 1
+                    break  # Only count each support location once
+    return count
+
+def get_best_scoring_path_index(damages, path_lengths, enemy_walls, supports, weights):
     # lowest score is best score so i gave the initial best score a rlly high number so it will get replaced immediately
     best_score = 10000000
     best_index = 0
@@ -89,6 +115,7 @@ def get_best_scoring_path_index(damages, path_lengths, enemy_walls, weights):
             weights["damage"] * damages[i]
             + weights["length"] * path_lengths[i]
             + weights["walls"] * enemy_walls[i]
+            + weights["supports"] * supports[i]
         )
         if score < best_score:
             best_score = score
