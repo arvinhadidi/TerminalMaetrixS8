@@ -261,7 +261,9 @@ class AlgoStrategy(gamelib.AlgoCore):
             # New stuff
             if (self.enemy_sides_full(game_state, self.chosen_hole, self.left_side_triangle, self.right_side_triangle)):
                 game_state.attempt_spawn(INTERCEPTOR, interceptor_loc, 5)
+                game_state.attempt_spawn(SCOUT, scout_loc, 100)
             else:
+                game_state.attempt_spawn(INTERCEPTOR, interceptor_loc, 5)
                 game_state.attempt_spawn(SCOUT, scout_loc, 100)
 
             self.attack_state = 0  # Reset attack state
