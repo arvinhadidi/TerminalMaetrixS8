@@ -15,18 +15,29 @@ class AlgoStrategy(gamelib.AlgoCore):
 
     left_side_triangle = [
         [3, 17],
-        [2, 16], [3, 16],
-        [1, 15], [2, 15], [3, 15],
-        [0, 14], [1, 14], [2, 14], [3, 14],
+        [2, 16],
+        [3, 16],
+        [1, 15],
+        [2, 15],
+        [3, 15],
+        [0, 14],
+        [1, 14],
+        [2, 14],
+        [3, 14],
     ]
 
     right_side_triangle = [
         [24, 17],
-        [24, 16], [25, 16],
-        [24, 15], [25, 15], [26, 15],
-        [24, 14], [25, 14], [26, 14], [27, 14],
+        [24, 16],
+        [25, 16],
+        [24, 15],
+        [25, 15],
+        [26, 15],
+        [24, 14],
+        [25, 14],
+        [26, 14],
+        [27, 14],
     ]
-
 
     def __init__(self):
         super().__init__()
@@ -71,7 +82,9 @@ class AlgoStrategy(gamelib.AlgoCore):
             game_state
         ):  # If enough mobile units are ready to attack in the NEXT turn
             self.attack_state = 1
-            self.chosen_hole = self.choose_weaker_side(game_state, self.left_side_triangle, self.right_side_triangle)
+            self.chosen_hole = self.choose_weaker_side(
+                game_state, self.left_side_triangle, self.right_side_triangle
+            )
             game_state.attempt_remove(
                 self.chosen_hole
             )  # The walls will remove NEXT TURN
@@ -108,6 +121,17 @@ class AlgoStrategy(gamelib.AlgoCore):
         return game_state.get_resource(MP) >= 14
 
     def build_structure(self, game_state):
+        priority_turrets = []
+        priority_turrets.extend([[0, 13], [27, 13], [1, 13], [26, 13][2, 13], [25, 13]])
+
+        if (
+            self.attack_state == 1 or self.attack_state == 2
+        ):  # If attempt_remove has been called, then don't build the chosen hole area
+            for loc in self.chosen_hole:
+                priority_turrets.remove(loc)
+
+        game_state.attempt_spawn(TURRET, priority_turrets)
+
         walls = []
 
         walls.append([4, 12])
@@ -237,12 +261,12 @@ class AlgoStrategy(gamelib.AlgoCore):
             if self.chosen_hole == [[1, 13]]:
                 demolisher_loc = [4, 9]
                 interceptor_loc = [3, 10]
-                scout_loc = [13, 0]
+                scout_loc = [14, 0]
 
             else:
                 demolisher_loc = [23, 9]
                 interceptor_loc = [24, 10]
-                scout_loc = [14, 0]
+                scout_loc = [13, 0]
 
             # if (
             #     self.detect_enemy_unit(
@@ -256,10 +280,15 @@ class AlgoStrategy(gamelib.AlgoCore):
             # else:
 
             #     game_state.attempt_spawn(INTERCEPTOR, interceptor_loc, 5)
-                  # Initial one that might self destruct
+            # Initial one that might self destruct
 
             # New stuff
-            if (self.enemy_sides_full(game_state, self.chosen_hole, self.left_side_triangle, self.right_side_triangle)):
+            if self.enemy_sides_full(
+                game_state,
+                self.chosen_hole,
+                self.left_side_triangle,
+                self.right_side_triangle,
+            ):
                 game_state.attempt_spawn(INTERCEPTOR, interceptor_loc, 5)
                 game_state.attempt_spawn(SCOUT, scout_loc, 100)
             else:
@@ -439,8 +468,10 @@ class AlgoStrategy(gamelib.AlgoCore):
         return most_convenient_spawn_location(
             game_state, location_options, TURRET, WALL, unit_type
         )
-    
-    def enemy_sides_full(self, game_state, chosen_hole, left_side_triangle, right_side_triangle):
+
+    def enemy_sides_full(
+        self, game_state, chosen_hole, left_side_triangle, right_side_triangle
+    ):
         x, _ = chosen_hole[0]
         if x == 1:
             coords = left_side_triangle
@@ -460,10 +491,9 @@ class AlgoStrategy(gamelib.AlgoCore):
 
         return enemy_count > 4
 
-
     def strength_score_at_locations(self, game_state, locations):
-        weights = { SUPPORT: 1.2, WALL: 0.5, TURRET: 2.0 }
-        counts = { SUPPORT: 0, WALL: 0, TURRET: 0 }
+        weights = {SUPPORT: 1.2, WALL: 0.5, TURRET: 2.0}
+        counts = {SUPPORT: 0, WALL: 0, TURRET: 0}
 
         for loc in locations:
             t = tuple(loc)
@@ -473,25 +503,23 @@ class AlgoStrategy(gamelib.AlgoCore):
                         counts[unit.unit_type] += 1
 
         return (
-            counts[SUPPORT] * weights[SUPPORT] +
-            counts[WALL]    * weights[WALL]    +
-            counts[TURRET] * weights[TURRET]
+            counts[SUPPORT] * weights[SUPPORT]
+            + counts[WALL] * weights[WALL]
+            + counts[TURRET] * weights[TURRET]
         )
-
 
     def choose_weaker_side(self, game_state, left_side_triangle, right_side_triangle):
         # Pick side which is weaker
         # Currently returns hard-coded values
-        if (self.strength_score_at_locations(game_state, left_side_triangle)
-                <
-                self.strength_score_at_locations(game_state, right_side_triangle)):
-            
+        if self.strength_score_at_locations(
+            game_state, left_side_triangle
+        ) < self.strength_score_at_locations(game_state, right_side_triangle):
+
             return [[1, 13]]
-        
+
         else:
 
             return [[26, 13]]
-
 
     def detect_enemy_unit(self, game_state, unit_type=None, valid_x=None, valid_y=None):
         total_units = 0
