@@ -400,25 +400,9 @@ class AlgoStrategy(gamelib.AlgoCore):
                 game_state.attempt_spawn(WALL, loc)
 
     def stall_with_interceptors(self, game_state):
-        """
-        Send out interceptors at random locations to defend our base from enemy moving units.
-        """
-        friendly_edges = game_state.game_map.get_edge_locations(
-            game_state.game_map.BOTTOM_LEFT
-        ) + game_state.game_map.get_edge_locations(game_state.game_map.BOTTOM_RIGHT)
 
-        deploy_locations = self.filter_blocked_locations(friendly_edges, game_state)
-        random.shuffle(deploy_locations)
-
-        # If we have remaining MP to spend on THREE interceptors, do it
-
-        for i in range(0, min(len(deploy_locations), 3)):
-            game_state.attempt_spawn(INTERCEPTOR, deploy_locations[i])
-
-            """
-            We don't have to remove the location since multiple mobile 
-            units can occupy the same space.
-            """
+        game_state.attempt_spawn(INTERCEPTOR, [21, 17])
+        game_state.attempt_spawn(INTERCEPTOR, [10, 3])
 
     def demolisher_line_strategy(self, game_state):
         """
