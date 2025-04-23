@@ -141,11 +141,15 @@ class AlgoStrategy(gamelib.AlgoCore):
 
         game_state.attempt_spawn(TURRET, priority_turrets)
 
+        support = []
+        support.extend([[4, 12], [23, 12], [7, 9], [20, 9]])
+        game_state.attempt_spawn(SUPPORT, support)
+
         walls = []
 
-        walls.append([4, 12])
+        walls.append([5, 12])
         walls.append([3, 13])
-        walls.append([23, 12])
+        walls.append([22, 12])
         walls.append([24, 13])
         walls.extend([[x, 11] for x in range(5, 23)])
         walls.extend([[7, 10], [11, 10], [16, 10], [20, 10]])
@@ -180,14 +184,14 @@ class AlgoStrategy(gamelib.AlgoCore):
             for loc in self.chosen_hole:
                 turrets.remove(loc)
 
-        support = []
-        support.extend([[8, 8], [19, 8], [8, 9], [19, 9]])
-
         game_state.attempt_spawn(WALL, walls)
         game_state.attempt_spawn(TURRET, turrets)
-        game_state.attempt_spawn(SUPPORT, support)
 
     def upgrade_structure(self, game_state):
+        support = []
+        support.extend([[4, 12], [23, 12], [7, 9], [20, 9]])
+        game_state.attempt_spawn(SUPPORT, support)
+
         priority_turrets = []
         priority_turrets.extend(
             [[0, 13], [27, 13], [1, 13], [26, 13], [2, 13], [25, 13], [4, 13], [23, 13]]
@@ -197,9 +201,9 @@ class AlgoStrategy(gamelib.AlgoCore):
 
         walls = []
 
-        walls.append([4, 12])
+        walls.append([5, 12])
         walls.append([3, 13])
-        walls.append([23, 12])
+        walls.append([22, 12])
         walls.append([24, 13])
         walls.extend([[x, 11] for x in range(5, 23)])
         walls.extend([[7, 10], [11, 10], [16, 10], [20, 10]])
@@ -228,12 +232,8 @@ class AlgoStrategy(gamelib.AlgoCore):
             ]
         )  # Main line
 
-        support = []
-        support.extend([[8, 8], [19, 8], [8, 9], [19, 9]])
-
         game_state.attempt_upgrade(turrets)
         game_state.attempt_upgrade(walls)
-        game_state.attempt_upgrade(support)
 
     def attack(self, game_state):
 
@@ -274,11 +274,17 @@ class AlgoStrategy(gamelib.AlgoCore):
                 demolisher_loc = [4, 9]
                 interceptor_loc = [3, 10]
                 scout_loc = [14, 0]
+                support_structures_reqd = [[4, 12], [7, 9]]
+                reqd_bobby_walls = [[0, 14], [1, 15], [2, 15], [3, 15]]
+                reqd_bobby_empty = [[1, 14], [2, 14], [3, 14], [4, 14]]
 
             else:
                 demolisher_loc = [23, 9]
                 interceptor_loc = [24, 10]
                 scout_loc = [13, 0]
+                support_structures_reqd = [[23, 12], [20, 9]]
+                reqd_bobby_walls = [[27, 14], [26, 15], [25, 25], [24, 15]]
+                reqd_bobby_empty = [[23, 14], [24, 14], [25, 14], [26, 14]]
 
             # if (
             #     self.detect_enemy_unit(
@@ -295,19 +301,29 @@ class AlgoStrategy(gamelib.AlgoCore):
             # Initial one that might self destruct
 
             # New stuff
-            if self.enemy_sides_full(
-                game_state,
-                self.chosen_hole,
-                self.left_side_triangle,
-                self.right_side_triangle,
+            if self.bobby_structure_detected(
+                game_state, reqd_bobby_walls, reqd_bobby_empty
             ):
-                game_state.attempt_spawn(INTERCEPTOR, interceptor_loc, 5)
+                game_state.attempt_spawn(DEMOLISHER, demolisher_loc, 2)
                 game_state.attempt_spawn(SCOUT, scout_loc, 100)
             else:
-                game_state.attempt_spawn(INTERCEPTOR, interceptor_loc, 5)
+                if all(
+                    map(game_state.contains_stationary_unit, support_structures_reqd)
+                ):
+                    game_state.attempt_spawn(INTERCEPTOR, interceptor_loc, 4)
+                else:
+                    game_state.attempt_spawn(INTERCEPTOR, interceptor_loc, 5)
+
                 game_state.attempt_spawn(SCOUT, scout_loc, 100)
 
             self.attack_state = 0  # Reset attack state
+
+    def bobby_structure_detected(self, game_state, walls, empty):
+        return all(map(game_state.contains_stationary_unit, walls)) and (
+            not any(map(game_state.contains_stationary_unit, empty))
+        )
+        # Checks if all the required walls are present
+        # Checks if all the required spaces are present
 
     def build_initial_defence(self, game_state):
         initial_turrets = [[22, 11], [17, 11], [14, 11], [10, 11], [5, 11]]
@@ -506,14 +522,21 @@ class AlgoStrategy(gamelib.AlgoCore):
     def choose_weaker_side(self, game_state, left_side_triangle, right_side_triangle):
         # Pick side which is weaker
         # Currently returns hard-coded values
-        left_side_strength = self.strength_score_at_locations(game_state, left_side_triangle)
-        left_side_health = self.sum_enemy_health_in_locations(game_state, left_side_triangle)
+        left_side_strength = self.strength_score_at_locations(
+            game_state, left_side_triangle
+        )
+        left_side_health = self.sum_enemy_health_in_locations(
+            game_state, left_side_triangle
+        )
         left_total_score = left_side_strength * 0.6 + left_side_health * 0.4
 
-        right_side_strength = self.strength_score_at_locations(game_state, right_side_triangle)
-        right_side_health = self.sum_enemy_health_in_locations(game_state, right_side_triangle)
+        right_side_strength = self.strength_score_at_locations(
+            game_state, right_side_triangle
+        )
+        right_side_health = self.sum_enemy_health_in_locations(
+            game_state, right_side_triangle
+        )
         right_total_score = right_side_strength * 0.6 + right_side_health * 0.4
-
 
         gamelib.debug_write(
             f"Left side: {left_side_strength}. Right side: {right_side_strength}"
@@ -542,7 +565,7 @@ class AlgoStrategy(gamelib.AlgoCore):
                 if u.player_index == 1 and u.unit_type in counts:
                     counts[u.unit_type] += 1
         return counts
-    
+
     def sum_enemy_health_in_locations(self, game_state, locations):
         """
         Scans the given list of [x,y] coords and returns the total
