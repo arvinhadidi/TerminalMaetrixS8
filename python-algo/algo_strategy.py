@@ -15,26 +15,18 @@ class AlgoStrategy(gamelib.AlgoCore):
     stack_size = 8
 
     left_side_triangle = [
-        [3, 17],
         [2, 16],
-        [3, 16],
         [1, 15],
         [2, 15],
-        [3, 15],
         [0, 14],
         [1, 14],
         [2, 14],
-        [3, 14],
     ]
 
     right_side_triangle = [
-        [24, 17],
-        [24, 16],
         [25, 16],
-        [24, 15],
         [25, 15],
         [26, 15],
-        [24, 14],
         [25, 14],
         [26, 14],
         [27, 14],
@@ -295,7 +287,7 @@ class AlgoStrategy(gamelib.AlgoCore):
                 if all(
                     map(game_state.contains_stationary_unit, support_structures_reqd)
                 ):
-                    game_state.attempt_spawn(INTERCEPTOR, interceptor_loc, 5)
+                    game_state.attempt_spawn(INTERCEPTOR, interceptor_loc, 4)
                 else:
                     game_state.attempt_spawn(INTERCEPTOR, interceptor_loc, 5)
 
