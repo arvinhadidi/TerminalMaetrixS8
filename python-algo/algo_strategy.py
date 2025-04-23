@@ -10,8 +10,13 @@ from utils.pathfinder import most_convenient_spawn_location
 class AlgoStrategy(gamelib.AlgoCore):
     attack_state = 0
     hole_area = [[[1, 13]], [[26, 13]]]
-    chosen_hole = []
     stack_size = 8
+    # booleans to track if we scored this or last round
+    scored_last_round = False
+    current_round_scored = False
+    # lists to check holes that were last chosen
+    last_chosen_hole = []
+    chosen_hole = []
 
     left_side_triangle = [
         [3, 17],
@@ -69,6 +74,10 @@ class AlgoStrategy(gamelib.AlgoCore):
         """
         game_state = gamelib.GameState(self.config, turn_state)
 
+        # shift variables forward
+        self.scored_last_round = self.current_round_scored
+        self.current_round_scored = False
+
         gamelib.debug_write(
             "Performing turn {} of your custom algo strategy".format(
                 game_state.turn_number
@@ -82,12 +91,17 @@ class AlgoStrategy(gamelib.AlgoCore):
             game_state
         ):  # If enough mobile units are ready to attack in the NEXT turn
             self.attack_state = 1
-            self.chosen_hole = self.choose_weaker_side(
-                game_state, self.left_side_triangle, self.right_side_triangle
-            )
+            # self.chosen_hole = self.choose_weaker_side(
+            #     game_state, self.left_side_triangle, self.right_side_triangle
+            # )
+
+            # choose a hole based on if we scored last round
+            self.chosen_hole = self.choose_scored_on_side()
             game_state.attempt_remove(
                 self.chosen_hole
             )  # The walls will remove NEXT TURN
+        else:
+            self.chosen_hole = []
 
         if self.attack_state == 1 and not any(
             list(map(game_state.contains_stationary_unit, self.chosen_hole))
@@ -122,7 +136,7 @@ class AlgoStrategy(gamelib.AlgoCore):
 
     def build_structure(self, game_state):
         priority_turrets = []
-        priority_turrets.extend([[0, 13], [27, 13], [1, 13], [26, 13][2, 13], [25, 13]])
+        priority_turrets.extend([[0, 13], [27, 13], [1, 13], [26, 13], [2, 13], [25, 13]])
 
         if (
             self.attack_state == 1 or self.attack_state == 2
@@ -456,6 +470,11 @@ class AlgoStrategy(gamelib.AlgoCore):
     def enemy_sides_full(
         self, game_state, chosen_hole, left_side_triangle, right_side_triangle
     ):
+        
+        # PROBLEM IS HERE
+        if not chosen_hole:
+            return False
+        
         x, _ = chosen_hole[0]
         if x == 1:
             coords = left_side_triangle
@@ -504,6 +523,23 @@ class AlgoStrategy(gamelib.AlgoCore):
         else:
 
             return [[26, 13]]
+        
+    def choose_scored_on_side(self):
+
+        if self.scored_last_round and self.last_chosen_hole != []:
+            self.chosen_hole = self.last_chosen_hole
+        else:
+            # Otherwise pick the opposite hole
+            # (hole_area is [ [[1,13]], [[26,13]] ])
+            if self.last_chosen_hole == self.hole_area[0]:
+                self.chosen_hole = self.hole_area[1]
+            else:
+                self.chosen_hole = self.hole_area[0]
+
+        # Remember for next time
+        self.last_chosen_hole = self.chosen_hole
+
+        return self.chosen_hole
 
     def detect_enemy_unit(self, game_state, unit_type=None, valid_x=None, valid_y=None):
         total_units = 0
@@ -537,11 +573,19 @@ class AlgoStrategy(gamelib.AlgoCore):
         state = json.loads(turn_string)
         events = state["events"]
         breaches = events["breach"]
+
+        # Flag to track if we did any damage this round
+        # damage_done_this_round = False
+        # mobile_units_sent = False
+
         for breach in breaches:
             location = breach[0]
             unit_owner_self = True if breach[4] == 1 else False
             # When parsing the frame data directly,
             # 1 is integer for yourself, 2 is opponent (StarterKit code uses 0, 1 as player_index instead)
+            if unit_owner_self:
+                self.current_round_scored = True
+
             if not unit_owner_self:
                 gamelib.debug_write("Got scored on at: {}".format(location))
                 self.scored_on_locations.append(location)
