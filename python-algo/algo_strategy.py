@@ -297,7 +297,7 @@ class AlgoStrategy(gamelib.AlgoCore):
                 if all(
                     map(game_state.contains_stationary_unit, support_structures_reqd)
                 ):
-                    game_state.attempt_spawn(INTERCEPTOR, interceptor_loc, 4)
+                    game_state.attempt_spawn(INTERCEPTOR, interceptor_loc, 5)
                 else:
                     game_state.attempt_spawn(INTERCEPTOR, interceptor_loc, 5)
 
@@ -418,8 +418,8 @@ class AlgoStrategy(gamelib.AlgoCore):
 
     def stall_with_interceptors(self, game_state):
 
-        game_state.attempt_spawn(INTERCEPTOR, [4, 9], 2)
-        game_state.attempt_spawn(INTERCEPTOR, [23, 9], 2)
+        game_state.attempt_spawn(INTERCEPTOR, [4, 9], 1)
+        game_state.attempt_spawn(INTERCEPTOR, [23, 9], 1)
 
     def demolisher_line_strategy(self, game_state):
         """
