@@ -267,7 +267,8 @@ class AlgoStrategy(gamelib.AlgoCore):
                 scout_loc = [14, 0]
                 support_structures_reqd = [[4, 12], [7, 9]]
                 reqd_bobby_walls = [[0, 14], [1, 15], [2, 15], [3, 15]]
-                reqd_bobby_empty = [[1, 14], [2, 14], [3, 14], [4, 14]]
+                # reqd_bobby_empty = [[1, 14], [2, 14], [3, 14], [4, 14]]
+                reqd_bobby_empty = [[1, 14]]
 
             else:
                 demolisher_loc = [23, 9]
@@ -275,7 +276,8 @@ class AlgoStrategy(gamelib.AlgoCore):
                 scout_loc = [13, 0]
                 support_structures_reqd = [[23, 12], [20, 9]]
                 reqd_bobby_walls = [[27, 14], [26, 15], [25, 25], [24, 15]]
-                reqd_bobby_empty = [[23, 14], [24, 14], [25, 14], [26, 14]]
+                # reqd_bobby_empty = [[23, 14], [24, 14], [25, 14], [26, 14]]
+                reqd_bobby_empty = [[26, 14]]
 
             # New stuff
             if self.bad_structure_detected(
@@ -483,7 +485,7 @@ class AlgoStrategy(gamelib.AlgoCore):
         return enemy_count > 4
 
     def strength_score_at_locations(self, game_state, locations):
-        weights = {SUPPORT: 1.2, WALL: 0.5, TURRET: 2.0}
+        weights = {SUPPORT: 1.2, WALL: 0.5, TURRET: 4.0}
         counts = {SUPPORT: 0, WALL: 0, TURRET: 0}
 
         new_counts = self.count_enemy_units_in_locations(game_state, locations, counts)
