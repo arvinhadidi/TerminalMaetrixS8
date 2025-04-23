@@ -13,6 +13,9 @@ class AlgoStrategy(gamelib.AlgoCore):
     chosen_hole = []
     opponent_sent_demolisher = False
     stack_size = 8
+    hole_history = []
+    damage_done_history = []
+    enemy_health_history = []
 
     left_side_triangle = [
         [2, 16],
@@ -77,6 +80,9 @@ class AlgoStrategy(gamelib.AlgoCore):
         if self.attack_state == 0 and self.check_if_attack_ready(
             game_state
         ):  # If enough mobile units are ready to attack in the NEXT turn
+            self.enemy_health_history.append(game_state.enemy_health)
+            if len(self.enemy_health_history) >= 3:
+                self.damage_done_history.append(self.enemy_health_history[-1] != self.enemy_health_history[-2])
             self.attack_state = 1
             self.chosen_hole = self.choose_weaker_side(
                 game_state, self.left_side_triangle, self.right_side_triangle
@@ -84,6 +90,8 @@ class AlgoStrategy(gamelib.AlgoCore):
             game_state.attempt_remove(
                 self.chosen_hole
             )  # The walls will remove NEXT TURN
+
+            self.hole_history.append(self.chosen_hole)
 
         if self.attack_state == 1 and not any(
             list(map(game_state.contains_stationary_unit, self.chosen_hole))
@@ -503,6 +511,13 @@ class AlgoStrategy(gamelib.AlgoCore):
     def choose_weaker_side(self, game_state, left_side_triangle, right_side_triangle):
         # Pick side which is weaker
         # Currently returns hard-coded values
+
+        if self.damage_done_history and self.damage_done_history[-1] == False:
+            if self.hole_history and self.hole_history[-1] == [[1, 12]]:
+                return [[26, 12]]
+            else:
+                return [[1, 12]]
+
         left_side_strength = self.strength_score_at_locations(
             game_state, left_side_triangle
         )
