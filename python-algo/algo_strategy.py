@@ -495,31 +495,46 @@ class AlgoStrategy(gamelib.AlgoCore):
         weights = {SUPPORT: 1.2, WALL: 0.5, TURRET: 2.0}
         counts = {SUPPORT: 0, WALL: 0, TURRET: 0}
 
-        for loc in locations:
-            t = tuple(loc)
-            if t in game_state.game_map:
-                for unit in game_state.game_map[t]:
-                    if unit.player_index == 1 and unit.unit_type in counts:
-                        counts[unit.unit_type] += 1
+        new_counts = self.count_enemy_units_in_locations(game_state, locations, counts)
+
+        gamelib.debug_write(f"Support: {new_counts[SUPPORT]}. Wall: {new_counts[WALL]}. Turret: {new_counts[TURRET]}")
 
         return (
-            counts[SUPPORT] * weights[SUPPORT]
-            + counts[WALL] * weights[WALL]
-            + counts[TURRET] * weights[TURRET]
+            new_counts[SUPPORT] * weights[SUPPORT]
+            + new_counts[WALL] * weights[WALL]
+            + new_counts[TURRET] * weights[TURRET]
         )
 
     def choose_weaker_side(self, game_state, left_side_triangle, right_side_triangle):
         # Pick side which is weaker
         # Currently returns hard-coded values
-        if self.strength_score_at_locations(
-            game_state, left_side_triangle
-        ) < self.strength_score_at_locations(game_state, right_side_triangle):
+        left_side_score = self.strength_score_at_locations(game_state, left_side_triangle)
+        right_side_score = self.strength_score_at_locations(game_state, right_side_triangle)
+        gamelib.debug_write(f"Left side: {left_side_score}. Right side: {right_side_score}")
+
+        if left_side_score < right_side_score:
 
             return [[1, 13]]
 
         else:
 
             return [[26, 13]]
+        
+    def count_enemy_units_in_locations(self, game_state, locations, counts):
+        """
+        Scans the given list of [x,y] coords and increments the passed-in
+        counts dict for each enemy stationary unit found.
+        """
+
+        for loc in locations:
+            t = tuple(loc)
+            # only if there’s any stationary unit there
+            if not game_state.contains_stationary_unit(loc):
+                continue
+            for u in game_state.game_map[t]:
+                if u.player_index == 1 and u.unit_type in counts:
+                    counts[u.unit_type] += 1
+        return counts
 
     def detect_enemy_unit(self, game_state, unit_type=None, valid_x=None, valid_y=None):
         total_units = 0
