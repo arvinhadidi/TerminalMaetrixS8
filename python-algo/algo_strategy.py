@@ -149,6 +149,9 @@ class AlgoStrategy(gamelib.AlgoCore):
         turrets.extend([[x, 13] for x in range(0, 4)])  # Left top side
         turrets.extend([[x, 13] for x in range(25, 28)])  # Right top side
 
+        turrets.remove([1, 13])
+        turrets.remove([26, 13])
+
         turrets.extend(
             [
                 [5, 10],
