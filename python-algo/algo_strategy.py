@@ -124,7 +124,7 @@ class AlgoStrategy(gamelib.AlgoCore):
         else:
             return (
                 game_state.project_future_MP(turns_in_future=1, player_index=0)
-                >= game_state.enemy_health + 5
+                >= game_state.enemy_health + 5 + 3
             )
 
     def build_structure(self, game_state):
@@ -497,7 +497,9 @@ class AlgoStrategy(gamelib.AlgoCore):
 
         new_counts = self.count_enemy_units_in_locations(game_state, locations, counts)
 
-        gamelib.debug_write(f"Support: {new_counts[SUPPORT]}. Wall: {new_counts[WALL]}. Turret: {new_counts[TURRET]}")
+        gamelib.debug_write(
+            f"Support: {new_counts[SUPPORT]}. Wall: {new_counts[WALL]}. Turret: {new_counts[TURRET]}"
+        )
 
         return (
             new_counts[SUPPORT] * weights[SUPPORT]
@@ -508,9 +510,15 @@ class AlgoStrategy(gamelib.AlgoCore):
     def choose_weaker_side(self, game_state, left_side_triangle, right_side_triangle):
         # Pick side which is weaker
         # Currently returns hard-coded values
-        left_side_score = self.strength_score_at_locations(game_state, left_side_triangle)
-        right_side_score = self.strength_score_at_locations(game_state, right_side_triangle)
-        gamelib.debug_write(f"Left side: {left_side_score}. Right side: {right_side_score}")
+        left_side_score = self.strength_score_at_locations(
+            game_state, left_side_triangle
+        )
+        right_side_score = self.strength_score_at_locations(
+            game_state, right_side_triangle
+        )
+        gamelib.debug_write(
+            f"Left side: {left_side_score}. Right side: {right_side_score}"
+        )
 
         if left_side_score < right_side_score:
 
@@ -519,7 +527,7 @@ class AlgoStrategy(gamelib.AlgoCore):
         else:
 
             return [[26, 13]]
-        
+
     def count_enemy_units_in_locations(self, game_state, locations, counts):
         """
         Scans the given list of [x,y] coords and increments the passed-in
@@ -574,7 +582,9 @@ class AlgoStrategy(gamelib.AlgoCore):
             # check if opponent has sent demolisher
             if owner == 2 and utype == DEMOLISHER:
                 self.opponent_sent_demolisher = True
-                gamelib.debug_write(f"⚠️ Opponent sent a Demolisher at turn {self.game_state.turn_number} at {(x,y)}")
+                gamelib.debug_write(
+                    f"⚠️ Opponent sent a Demolisher at turn {self.game_state.turn_number} at {(x,y)}"
+                )
                 # once we see one, we can break or keep scanning if you want all of them
                 break
 
