@@ -119,7 +119,7 @@ class AlgoStrategy(gamelib.AlgoCore):
         game_state.attempt_remove([[22, 11], [17, 11], [14, 11], [10, 11], [5, 11]])
 
     def check_if_attack_ready(self, game_state):
-        if game_state.enemy_health >= 9:
+        if game_state.enemy_health > 11:
             return game_state.project_future_MP(turns_in_future=1, player_index=0) >= 14
         else:
             return (
@@ -285,22 +285,8 @@ class AlgoStrategy(gamelib.AlgoCore):
                 reqd_bobby_walls = [[27, 14], [26, 15], [25, 25], [24, 15]]
                 reqd_bobby_empty = [[23, 14], [24, 14], [25, 14], [26, 14]]
 
-            # if (
-            #     self.detect_enemy_unit(
-            #         game_state, unit_type=None, valid_x=None, valid_y=[14, 15]
-            #     )
-            #     > 10
-            # ):
-
-            #     game_state.attempt_spawn(DEMOLISHER, demolisher_loc, 1000)
-
-            # else:
-
-            #     game_state.attempt_spawn(INTERCEPTOR, interceptor_loc, 5)
-            # Initial one that might self destruct
-
             # New stuff
-            if self.bobby_structure_detected(
+            if self.bad_structure_detected(
                 game_state, reqd_bobby_walls, reqd_bobby_empty
             ):
                 game_state.attempt_spawn(DEMOLISHER, demolisher_loc, 2)
@@ -309,7 +295,7 @@ class AlgoStrategy(gamelib.AlgoCore):
                 if all(
                     map(game_state.contains_stationary_unit, support_structures_reqd)
                 ):
-                    game_state.attempt_spawn(INTERCEPTOR, interceptor_loc, 4)
+                    game_state.attempt_spawn(INTERCEPTOR, interceptor_loc, 5)
                 else:
                     game_state.attempt_spawn(INTERCEPTOR, interceptor_loc, 5)
 
@@ -317,10 +303,12 @@ class AlgoStrategy(gamelib.AlgoCore):
 
             self.attack_state = 0  # Reset attack state
 
-    def bobby_structure_detected(self, game_state, walls, empty):
-        return all(map(game_state.contains_stationary_unit, walls)) and (
-            not any(map(game_state.contains_stationary_unit, empty))
-        )
+    def bad_structure_detected(self, game_state, walls, empty):
+        # return all(map(game_state.contains_stationary_unit, walls)) and (
+        #     not any(map(game_state.contains_stationary_unit, empty))
+        # )
+
+        return not any(map(game_state.contains_stationary_unit, empty))
         # Checks if all the required walls are present
         # Checks if all the required spaces are present
 
