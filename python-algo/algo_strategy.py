@@ -9,7 +9,7 @@ from utils.pathfinder import most_convenient_spawn_location
 
 class AlgoStrategy(gamelib.AlgoCore):
     attack_state = 0
-    hole_area = [[[1, 13]], [[26, 13]]]
+    hole_area = [[[1, 12]], [[26, 12]]]
     chosen_hole = []
     opponent_sent_demolisher = False
     stack_size = 8
@@ -111,8 +111,8 @@ class AlgoStrategy(gamelib.AlgoCore):
         game_state.attempt_remove([[22, 11], [17, 11], [14, 11], [10, 11], [5, 11]])
 
     def check_if_attack_ready(self, game_state):
-        if game_state.enemy_health > 11:
-            return game_state.project_future_MP(turns_in_future=1, player_index=0) >= 14
+        if game_state.enemy_health > 10:
+            return game_state.project_future_MP(turns_in_future=1, player_index=0) >= 12
         else:
             return (
                 game_state.project_future_MP(turns_in_future=1, player_index=0)
@@ -122,7 +122,7 @@ class AlgoStrategy(gamelib.AlgoCore):
     def build_structure(self, game_state):
         priority_turrets = []
         priority_turrets.extend(
-            [[0, 13], [27, 13], [1, 13], [26, 13], [2, 13], [25, 13], [4, 13], [23, 13]]
+            [[0, 13], [27, 13], [1, 12], [26, 12], [2, 13], [25, 13], [4, 13], [23, 13]]
         )
 
         if (
@@ -185,7 +185,7 @@ class AlgoStrategy(gamelib.AlgoCore):
 
         priority_turrets = []
         priority_turrets.extend(
-            [[0, 13], [27, 13], [1, 13], [26, 13], [2, 13], [25, 13], [4, 13], [23, 13]]
+            [[0, 13], [27, 13], [1, 12], [26, 12], [2, 13], [25, 13], [4, 13], [23, 13]]
         )
 
         game_state.attempt_upgrade(priority_turrets)
