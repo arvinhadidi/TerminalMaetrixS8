@@ -116,7 +116,7 @@ class AlgoStrategy(gamelib.AlgoCore):
         else:
             return (
                 game_state.project_future_MP(turns_in_future=1, player_index=0)
-                >= game_state.enemy_health + 5 + 3
+                >= game_state.enemy_health + 5 + 1
             )
 
     def build_structure(self, game_state):
