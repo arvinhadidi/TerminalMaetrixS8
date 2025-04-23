@@ -71,6 +71,9 @@ class AlgoStrategy(gamelib.AlgoCore):
             True
         )  # Comment or remove this line to enable warnings.
 
+        if game_state.turn_number <= 5:
+            self.stall_with_interceptors(game_state)
+
         if self.attack_state == 0 and self.check_if_attack_ready(
             game_state
         ):  # If enough mobile units are ready to attack in the NEXT turn
@@ -169,11 +172,11 @@ class AlgoStrategy(gamelib.AlgoCore):
             ]
         )  # Main line
 
+        game_state.attempt_spawn(TURRET, turrets)
         game_state.attempt_spawn(WALL, walls)
         support = []
         support.extend([[4, 12], [23, 12], [7, 9], [20, 9]])
         game_state.attempt_spawn(SUPPORT, support)
-        game_state.attempt_spawn(TURRET, turrets)
 
     def upgrade_structure(self, game_state):
         support = []
@@ -264,8 +267,8 @@ class AlgoStrategy(gamelib.AlgoCore):
                 scout_loc = [14, 0]
                 support_structures_reqd = [[4, 12], [7, 9]]
                 reqd_bobby_walls = [[0, 14], [1, 15], [2, 15], [3, 15]]
-                # reqd_bobby_empty = [[1, 14], [2, 14], [3, 14], [4, 14]]
-                reqd_bobby_empty = [[1, 14]]
+                reqd_bobby_empty = [[1, 14], [2, 14], [3, 14], [4, 14]]
+                # reqd_bobby_empty = [[1, 14]]
 
             else:
                 demolisher_loc = [23, 9]
@@ -273,8 +276,8 @@ class AlgoStrategy(gamelib.AlgoCore):
                 scout_loc = [13, 0]
                 support_structures_reqd = [[23, 12], [20, 9]]
                 reqd_bobby_walls = [[27, 14], [26, 15], [25, 25], [24, 15]]
-                # reqd_bobby_empty = [[23, 14], [24, 14], [25, 14], [26, 14]]
-                reqd_bobby_empty = [[26, 14]]
+                reqd_bobby_empty = [[23, 14], [24, 14], [25, 14], [26, 14]]
+                # reqd_bobby_empty = [[26, 14]]
 
             # New stuff
             if self.bad_structure_detected(
@@ -407,8 +410,8 @@ class AlgoStrategy(gamelib.AlgoCore):
 
     def stall_with_interceptors(self, game_state):
 
-        game_state.attempt_spawn(INTERCEPTOR, [21, 17])
-        game_state.attempt_spawn(INTERCEPTOR, [10, 3])
+        game_state.attempt_spawn(INTERCEPTOR, [4, 9], 2)
+        game_state.attempt_spawn(INTERCEPTOR, [23, 9], 2)
 
     def demolisher_line_strategy(self, game_state):
         """
