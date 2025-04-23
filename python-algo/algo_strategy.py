@@ -118,7 +118,7 @@ class AlgoStrategy(gamelib.AlgoCore):
         game_state.attempt_remove([[22, 11], [17, 11], [14, 11], [10, 11], [5, 11]])
 
     def check_if_attack_ready(self, game_state):
-        return game_state.get_resource(MP) >= 14
+        return game_state.project_future_MP(turns_in_future=1, player_index=0) >= 14
 
     def build_structure(self, game_state):
         priority_turrets = []
