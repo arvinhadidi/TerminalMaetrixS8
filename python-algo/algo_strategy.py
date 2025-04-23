@@ -506,17 +506,20 @@ class AlgoStrategy(gamelib.AlgoCore):
     def choose_weaker_side(self, game_state, left_side_triangle, right_side_triangle):
         # Pick side which is weaker
         # Currently returns hard-coded values
-        left_side_score = self.strength_score_at_locations(
-            game_state, left_side_triangle
-        )
-        right_side_score = self.strength_score_at_locations(
-            game_state, right_side_triangle
-        )
+        left_side_strength = self.strength_score_at_locations(game_state, left_side_triangle)
+        left_side_health = self.sum_enemy_health_in_locations(game_state, left_side_triangle)
+        left_total_score = left_side_strength * 0.6 + left_side_health * 0.4
+
+        right_side_strength = self.strength_score_at_locations(game_state, right_side_triangle)
+        right_side_health = self.sum_enemy_health_in_locations(game_state, right_side_triangle)
+        right_total_score = right_side_strength * 0.6 + right_side_health * 0.4
+
+
         gamelib.debug_write(
-            f"Left side: {left_side_score}. Right side: {right_side_score}"
+            f"Left side: {left_side_strength}. Right side: {right_side_strength}"
         )
 
-        if left_side_score < right_side_score:
+        if left_total_score < right_total_score:
 
             return [[1, 13]]
 
@@ -539,6 +542,23 @@ class AlgoStrategy(gamelib.AlgoCore):
                 if u.player_index == 1 and u.unit_type in counts:
                     counts[u.unit_type] += 1
         return counts
+    
+    def sum_enemy_health_in_locations(self, game_state, locations):
+        """
+        Scans the given list of [x,y] coords and returns the total
+        current health of all enemy stationary units found there.
+        """
+        total_health = 0
+        for loc in locations:
+            # fast-path: no unit here? skip
+            if not game_state.contains_stationary_unit(loc):
+                continue
+            # otherwise grab every unit at that spot
+            for unit in game_state.game_map[tuple(loc)]:
+                # only enemy stationary units
+                if unit.player_index == 1:
+                    total_health += unit.health  # current HP
+        return total_health
 
     def detect_enemy_unit(self, game_state, unit_type=None, valid_x=None, valid_y=None):
         total_units = 0
