@@ -166,12 +166,6 @@ class AlgoStrategy(gamelib.AlgoCore):
             ]
         )  # Main line
 
-        if (
-            self.attack_state == 1 or self.attack_state == 2
-        ):  # If attempt_remove has been called, then don't build the chosen hole area
-            for loc in self.chosen_hole:
-                turrets.remove(loc)
-
         game_state.attempt_spawn(WALL, walls)
         support = []
         support.extend([[4, 12], [23, 12], [7, 9], [20, 9]])
@@ -261,7 +255,7 @@ class AlgoStrategy(gamelib.AlgoCore):
                 game_state, massive_attack_spawn_locations, "INTERCEPTOR"
             )
 
-            if self.chosen_hole == [[1, 13]]:
+            if self.chosen_hole == [[1, 12]]:
                 demolisher_loc = [4, 9]
                 interceptor_loc = [3, 10]
                 scout_loc = [14, 0]
@@ -525,11 +519,11 @@ class AlgoStrategy(gamelib.AlgoCore):
 
         if left_total_score < right_total_score:
 
-            return [[1, 13]]
+            return [[1, 12]]
 
         else:
 
-            return [[26, 13]]
+            return [[26, 12]]
 
     def count_enemy_units_in_locations(self, game_state, locations, counts):
         """
