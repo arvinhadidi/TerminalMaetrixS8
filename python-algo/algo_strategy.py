@@ -122,7 +122,9 @@ class AlgoStrategy(gamelib.AlgoCore):
 
     def build_structure(self, game_state):
         priority_turrets = []
-        priority_turrets.extend([[0, 13], [27, 13], [1, 13], [26, 13][2, 13], [25, 13]])
+        priority_turrets.extend(
+            [[0, 13], [27, 13], [1, 13], [26, 13], [2, 13], [25, 13]]
+        )
 
         if (
             self.attack_state == 1 or self.attack_state == 2
