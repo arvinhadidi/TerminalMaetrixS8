@@ -130,7 +130,7 @@ class AlgoStrategy(gamelib.AlgoCore):
     def build_structure(self, game_state):
         priority_turrets = []
         priority_turrets.extend(
-            [[0, 13], [27, 13], [1, 13], [26, 13], [2, 13], [25, 13]]
+            [[0, 13], [27, 13], [1, 13], [26, 13], [2, 13], [25, 13], [4, 13], [23, 13]]
         )
 
         if (
@@ -161,7 +161,6 @@ class AlgoStrategy(gamelib.AlgoCore):
             [
                 [5, 10],
                 [6, 10],
-                [8, 10],
                 [9, 10],
                 [10, 10],
                 [12, 10],
@@ -170,7 +169,6 @@ class AlgoStrategy(gamelib.AlgoCore):
                 [15, 10],
                 [17, 10],
                 [18, 10],
-                [19, 10],
                 [21, 10],
                 [22, 10],
             ]
@@ -192,7 +190,7 @@ class AlgoStrategy(gamelib.AlgoCore):
     def upgrade_structure(self, game_state):
         priority_turrets = []
         priority_turrets.extend(
-            [[0, 13], [27, 13], [1, 13], [26, 13], [2, 13], [25, 13]]
+            [[0, 13], [27, 13], [1, 13], [26, 13], [2, 13], [25, 13], [4, 13], [23, 13]]
         )
 
         game_state.attempt_upgrade(priority_turrets)
@@ -217,7 +215,6 @@ class AlgoStrategy(gamelib.AlgoCore):
             [
                 [5, 10],
                 [6, 10],
-                [8, 10],
                 [9, 10],
                 [10, 10],
                 [12, 10],
@@ -226,7 +223,6 @@ class AlgoStrategy(gamelib.AlgoCore):
                 [15, 10],
                 [17, 10],
                 [18, 10],
-                [19, 10],
                 [21, 10],
                 [22, 10],
             ]
