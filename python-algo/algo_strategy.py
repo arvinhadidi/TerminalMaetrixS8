@@ -182,13 +182,20 @@ class AlgoStrategy(gamelib.AlgoCore):
                 turrets.remove(loc)
 
         support = []
-        support.extend([[13, 8], [14, 8], [13, 9], [14, 9]])
+        support.extend([[8, 8], [19, 8], [8, 9], [19, 9]])
 
         game_state.attempt_spawn(WALL, walls)
         game_state.attempt_spawn(TURRET, turrets)
         game_state.attempt_spawn(SUPPORT, support)
 
     def upgrade_structure(self, game_state):
+        priority_turrets = []
+        priority_turrets.extend(
+            [[0, 13], [27, 13], [1, 13], [26, 13], [2, 13], [25, 13]]
+        )
+
+        game_state.attempt_upgrade(priority_turrets)
+
         walls = []
 
         walls.append([4, 12])
@@ -225,11 +232,11 @@ class AlgoStrategy(gamelib.AlgoCore):
         )  # Main line
 
         support = []
-        support.extend([[13, 8], [14, 8], [13, 9], [14, 9]])
+        support.extend([[8, 8], [19, 8], [8, 9], [19, 9]])
 
+        game_state.attempt_upgrade(turrets)
         game_state.attempt_upgrade(walls)
         game_state.attempt_upgrade(support)
-        game_state.attempt_upgrade(turrets)
 
     def attack(self, game_state):
 
