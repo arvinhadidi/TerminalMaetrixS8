@@ -17,6 +17,7 @@ class AlgoStrategy(gamelib.AlgoCore):
     # lists to check holes that were last chosen
     last_chosen_hole = []
     chosen_hole = []
+    opponent_sent_demolisher = False
 
     left_side_triangle = [
         [3, 17],
@@ -75,6 +76,7 @@ class AlgoStrategy(gamelib.AlgoCore):
         game_state = gamelib.GameState(self.config, turn_state)
 
         # shift variables forward
+        
         self.scored_last_round = self.current_round_scored
         self.current_round_scored = False
 
@@ -108,7 +110,7 @@ class AlgoStrategy(gamelib.AlgoCore):
         ):  # any[False, False, False] = False
             self.attack_state = 2
 
-        if game_state.turn_number <= 2:
+        if game_state.turn_number <= 2 and self.opponent_sent_demolisher:
             self.stall_with_interceptors(game_state)
 
         self.build_structure(game_state)
@@ -592,6 +594,15 @@ class AlgoStrategy(gamelib.AlgoCore):
         # Flag to track if we did any damage this round
         # damage_done_this_round = False
         # mobile_units_sent = False
+
+        for spawn in state.get("spawn", []):
+            x, y, utype, *_rest, owner = spawn
+            # check if opponent has sent demolisher
+            if owner == 2 and utype == DEMOLISHER:
+                self.opponent_sent_demolisher = True
+                gamelib.debug_write(f"⚠️ Opponent sent a Demolisher at turn {self.game_state.turn_number} at {(x,y)}")
+                # once we see one, we can break or keep scanning if you want all of them
+                break
 
         for breach in breaches:
             location = breach[0]
